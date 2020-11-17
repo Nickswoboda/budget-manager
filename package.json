@@ -1,0 +1,23 @@
+{
+  "name": "budget-manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickswoboda/budget-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nickswoboda/budget-manager/issues"
+  },
+  "homepage": "https://github.com/nickswoboda/budget-manager#readme",
+  "devDependencies": {
+    "electron": "^11.0.0"
+  }
+}
