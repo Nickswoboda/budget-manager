@@ -1,7 +1,9 @@
 const {app, BrowserWindow, ipcMain } = require('electron')
 
+let win = null
+
 function createWindow(){
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences:{
@@ -29,7 +31,7 @@ app.on('activate', () => {
 })
 
 ipcMain.on('add-entry-clicked', () => {
-    let win = new BrowserWindow({
+    let popup = new BrowserWindow({
         width: 500,
         height: 500,
         frame: false,
@@ -38,11 +40,14 @@ ipcMain.on('add-entry-clicked', () => {
             enableRemoteModule: true
         }
     })
-    win.on('close', () => {
-        win = null
+    popup.on('close', () => {
+        popup = null
     })
-    win.loadFile('src/add-entry.html')
-    win.show()
-    win.webContents.openDevTools()
+    popup.loadFile('src/add-entry.html')
+    popup.show()
+})
 
+ipcMain.on('entry-added', (event, args) =>{
+    console.log("pong")
+    win.webContents.send('addEntry', args)
 })
