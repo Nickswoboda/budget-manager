@@ -1,4 +1,6 @@
+const { assert } = require('console')
 const {app, BrowserWindow, ipcMain } = require('electron')
+const fs = require('fs')
 
 let win = null
 
@@ -47,7 +49,19 @@ ipcMain.on('add-entry-clicked', () => {
     popup.show()
 })
 
-ipcMain.on('entry-added', (event, args) =>{
-    console.log("pong")
-    win.webContents.send('addEntry', args)
+ipcMain.on('entry-added', (event, entry) =>{
+    win.webContents.send('addEntry', entry)
+    let entry_data = []
+
+    if (fs.existsSync("assets/data.csv")){
+        entry_data = fs.readFileSync("assets/data.csv").toString()
+    }
+    else{
+        //add header for new file
+        entry_data.push("Date, Amount, Category")
+    }
+
+    new_entry = entry.join(', ')
+    entry_data += '\n' + new_entry
+    fs.writeFileSync('assets/data.csv', entry_data)
 })

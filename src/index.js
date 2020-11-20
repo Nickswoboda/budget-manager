@@ -13,9 +13,9 @@ ipcRenderer.on('addEntry', (event, args) => {
     let amount = row.insertCell(1)
     let category = row.insertCell(2)
 
-    date.innerHTML = args.date
-    amount.innerHTML = args.amount
-    category.innerHTML = args.category
+    date.innerHTML = args[0]
+    amount.innerHTML = args[1]
+    category.innerHTML = args[2]
 })
 
 

@@ -1,12 +1,13 @@
 const {ipcRenderer, remote} = require('electron')
 
+document.getElementById('date-input').valueAsDate = new Date()
 var submit_btn = document.getElementById('submit-btn')
 submit_btn.addEventListener('click', () =>{
-    var data = {
-        date: document.getElementById('date-input').value,
-        amount: document.getElementById('amount-input').value,
-        category: document.getElementById('category-input').value
-    }
+    var data = [
+        document.getElementById('date-input').value.toString(),
+        document.getElementById('amount-input').value.toString(),
+        document.getElementById('category-input').value.toString()
+    ]
 
     ipcRenderer.send('entry-added', data)
     let win = remote.getCurrentWindow()
