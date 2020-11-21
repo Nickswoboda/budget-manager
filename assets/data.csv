@@ -1,3 +1,6 @@
-Date, Amount, Category
-2020-11-20, 22, housing
-2020-11-20, 1323, housing
+Date,Amount,Category
+2020-11-21,111,utilities
+2020-11-21,1111111,food
+2020-11-21,134,transportation
+2020-11-21,22,housing
+2020-11-21,111,food
