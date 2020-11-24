@@ -46,6 +46,7 @@ ipcMain.on('add-entry-clicked', () => {
     })
     popup.loadFile('src/add-entry.html')
     popup.show()
+    popup.webContents.openDevTools()
 })
 
 ipcMain.on('entry-added', (event, entry) =>{

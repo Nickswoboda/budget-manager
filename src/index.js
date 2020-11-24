@@ -1,6 +1,62 @@
 const { ipcRenderer } = require('electron')
 const fs = require('fs')
 
+function updateCategoryTotal(category, total, percentage)
+{
+    let table = document.getElementById("totals-table")
+
+    for (i = 0; i < table.rows.length; ++i){
+        row_category = table.rows[i].cells[0].innerHTML
+        if (row_category === category){
+            table.rows[i].cells[1].innerHTML = total
+            table.rows[i].cells[2].innerHTML = percentage
+            return
+        }
+    }
+
+    var new_row = table.insertRow(1)
+    let category_cell = new_row.insertCell(0)
+    let amount_cell = new_row.insertCell(1)
+    let percent_cell = new_row.insertCell(2)
+
+    category_cell.innerHTML = category 
+    amount_cell.innerHTML = total 
+    percent_cell.innerHTML = percentage
+
+}
+function updateTotalsTable()
+{
+    let categories = {} 
+    let total = 0
+
+    let table = document.getElementById("table")
+    var rows = table.querySelectorAll("tr")
+
+    for (var i = 1; i < rows.length; ++i){
+        var row = []
+        var cols = rows[i].querySelectorAll("td")
+
+        for (var j = 1; j < cols.length; ++j){
+            row.push(cols[j].innerHTML)
+        }
+
+        if (row[1] in categories){
+            categories[row[1]] += parseFloat(row[0])
+        }
+        else{
+            categories[row[1]] = parseFloat(row[0])
+        }
+        total += parseFloat(row[0])
+    }
+
+    for (item in categories){
+        let amount = parseFloat(categories[item])
+        let percentage = amount / total
+
+        updateCategoryTotal(item, amount.toFixed(2), percentage.toFixed(2) * 100)
+    }
+
+}
 
 function loadTableFromCSV()
 {
@@ -29,6 +85,8 @@ function loadTableFromCSV()
             cell.innerHTML = values[i]
         }
     })
+
+    updateTotalsTable()
 }
 
 loadTableFromCSV()
@@ -36,7 +94,9 @@ loadTableFromCSV()
 function saveTableAsCSV()
 {
     var csv = []
-    var rows = document.querySelectorAll("table tr")
+
+    let table = document.getElementById("table")
+    var rows = table.querySelectorAll("tr")
 
     for (var i = 0; i < rows.length; ++i){
         var row = []
@@ -70,6 +130,7 @@ ipcRenderer.on('addEntry', (event, args) => {
     category.innerHTML = args[2]
 
     saveTableAsCSV()
+    updateTotalsTable()
 })
 
 

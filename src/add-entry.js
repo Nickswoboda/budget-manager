@@ -8,7 +8,7 @@ function isValidInput()
     let month = date.getMonth()
     if (month < 0 || month > 12) return false
     let days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    let day = date.getDay()
+    let day = date.getDate()
     if (day < 1 || day > days_in_month[month]) return false
 
     let amount = document.getElementById('amount-input').valueAsNumber

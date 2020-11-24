@@ -4,17 +4,30 @@
     <meta charset="UTF-8">
     <title>Budget Manager</title>
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link rel="stylesheet" href="../styles/index.css">
 </head>
 <body>
     <button id="add-btn">Add Entry</button>
-    <h1>History</h1>
-    <table id="table">
-        <tr>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Category</th>
-        </tr>
-    </table>
+    <div>
+        <h1>History</h1>
+        <table id="table">
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Category</th>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <h1>Totals</h1>
+        <table id="totals-table">
+            <tr>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Percentage</th>
+            </tr>
+        </table>
+    </div>
     <script src="index.js"></script>
 </body>
 </html>
