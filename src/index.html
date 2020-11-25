@@ -11,7 +11,7 @@
     <button id="income-btn">Add Income</button>
     <div>
         <h1>History</h1>
-        <table id="table">
+        <table id="history-table">
             <tr>
                 <th>Date</th>
                 <th>Amount</th>
@@ -21,7 +21,14 @@
     </div>
     <div>
         <h1>Totals</h1>
-        <table id="totals-table">
+        <table id="expense-table">
+            <tr>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Percentage</th>
+            </tr>
+        </table>
+        <table id="income-table">
             <tr>
                 <th>Category</th>
                 <th>Amount</th>
@@ -29,6 +36,8 @@
             </tr>
         </table>
     </div>
+    <h1>Net Income:</h1>
+    <h2 id="net-income"></h2>
     <script src="index.js"></script>
 </body>
 </html>
