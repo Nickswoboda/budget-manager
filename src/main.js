@@ -31,7 +31,7 @@ app.on('activate', () => {
     }
 })
 
-ipcMain.on('add-entry-clicked', () => {
+ipcMain.on('add-entry-clicked', (event, is_expense) => {
     let popup = new BrowserWindow({
         width: 500,
         height: 500,
@@ -45,8 +45,13 @@ ipcMain.on('add-entry-clicked', () => {
         popup = null
     })
     popup.loadFile('src/add-entry.html')
-    popup.show()
-    popup.webContents.openDevTools()
+
+    popup.once('ready-to-show', () =>{
+        popup.show()
+        global.is_expense = is_expense
+    })
+
+    //popup.webContents.openDevTools()
 })
 
 ipcMain.on('entry-added', (event, entry) =>{

@@ -80,6 +80,8 @@ function loadTableFromCSV()
     entries.forEach((value) => {
         let row = table.insertRow(1)
         let values = value.split(",")
+
+        row.style.backgroundColor = parseFloat(values[1]) < 0 ? "red" : "green"
         for (let i = 0; i < 3; ++i){
             let cell = row.insertCell(i)
             cell.innerHTML = values[i]
@@ -113,14 +115,22 @@ function saveTableAsCSV()
     fs.writeFileSync("assets/data.csv", csv)
 }
 
-var add_btn = document.getElementById("add-btn")
-add_btn.addEventListener('click', () =>{
-    ipcRenderer.send('add-entry-clicked')
+var expense_button = document.getElementById("expense-btn")
+expense_button.addEventListener('click', () =>{
+    ipcRenderer.send('add-entry-clicked', true)
+})
+
+var income_button = document.getElementById("income-btn")
+income_button.addEventListener('click', () =>{
+    ipcRenderer.send('add-entry-clicked', false)
 })
 
 ipcRenderer.on('addEntry', (event, args) => {
     let table = document.getElementById('table')
+    
     let row = table.insertRow(1)
+    row.style.backgroundColor = parseFloat(args[1]) < 0 ? "red" : "green"
+
     let date = row.insertCell(0)
     let amount = row.insertCell(1)
     let category = row.insertCell(2)
@@ -132,5 +142,4 @@ ipcRenderer.on('addEntry', (event, args) => {
     saveTableAsCSV()
     updateTotalsTable()
 })
-
 

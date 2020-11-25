@@ -1,5 +1,6 @@
 const {ipcRenderer, remote} = require('electron')
 
+var is_expense = true
 function isValidInput()
 {
     let date = document.getElementById('date-input').valueAsDate
@@ -18,12 +19,18 @@ function isValidInput()
 }
 document.getElementById('date-input').valueAsDate = new Date()
 var submit_btn = document.getElementById('submit-btn')
+
 submit_btn.addEventListener('click', () =>{
     if (!isValidInput()) return
 
+    let amount = document.getElementById('amount-input').value.toString()
+    if (remote.getGlobal("is_expense")) {
+        amount = "-" + amount
+    }
+
     var data = [
         document.getElementById('date-input').value.toString(),
-        document.getElementById('amount-input').value.toString(),
+        amount,
         document.getElementById('category-input').value.toString()
     ]
 
