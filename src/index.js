@@ -1,9 +1,20 @@
 const { ipcRenderer, remote } = require('electron')
 const fs = require('fs')
-const { parse } = require('path')
+
+class Entry{
+    constructor(date, amount, category){
+        this.date = date 
+        this.amount = amount 
+        this.category = category
+        this.is_expense = amount < 0 ? true : false
+    }
+}
 
 var expense_total = 0
 var income_total = 0
+var history_data = []
+
+loadTableFromCSV()
 
 function updateTotalPercentages(is_expense)
 {
@@ -25,22 +36,24 @@ function updateTotalPercentages(is_expense)
 
 
 }
-function updateCategoryTotal(category, amount, is_expense)
-{
-    let table = is_expense ? document.getElementById("expense-table") : document.getElementById("income-table")
 
-    if (is_expense){
-        expense_total += parseFloat(amount)
+function updateCategoryTotal(entry)
+{
+    let table = entry.is_expense ? document.getElementById("expense-table") : document.getElementById("income-table")
+
+    if (entry.is_expense){
+        expense_total += entry.amount
     }else{
-        income_total += parseFloat(amount)
+        income_total += entry.amount
     }
+
     for (i = 0; i < table.rows.length; ++i){
         row_category = table.rows[i].cells[0].innerHTML
-        if (row_category === category){
+        if (row_category === entry.category){
             let amount_cell = table.rows[i].cells[1]
-            let new_amount = parseFloat(amount_cell.innerHTML) + parseFloat(amount)
+            let new_amount = parseFloat(amount_cell.innerHTML) + entry.amount 
             amount_cell.innerHTML = new_amount
-            updateTotalPercentages(is_expense)
+            updateTotalPercentages(entry.is_expense)
             return
         }
     }
@@ -49,11 +62,54 @@ function updateCategoryTotal(category, amount, is_expense)
     let category_cell = new_row.insertCell(0)
     let amount_cell = new_row.insertCell(1)
 
-    category_cell.innerHTML = category 
-    amount_cell.innerHTML = amount 
+    category_cell.innerHTML = entry.category 
+    amount_cell.innerHTML = entry.amount 
 
     new_row.insertCell(2)
-    updateTotalPercentages(is_expense)
+    updateTotalPercentages(entry.is_expense)
+}
+
+function insertIntoHistory(entry)
+{
+    let left = 0
+    let right = history_data.length
+
+    let entry_date = new Date(entry.date)
+    let entry_time = entry_date.getTime()
+    while (left < right){
+        let mid = Math.trunc((left +right) / 2)
+        let history_entry = history_data[mid]
+        let history_date = new Date(history_entry.date)
+        let history_time = history_date.getTime()
+        if (entry_time < history_time){
+            right = mid
+        }
+        else{
+            left = mid+1
+        }
+        
+    }
+    history_data.splice(left, 0, entry)
+    return left 
+}
+function addEntry(entry)
+{
+    let table = document.getElementById("history-table")
+    
+    let index = insertIntoHistory(entry)
+    let row = table.insertRow(index + 1)
+    row.style.backgroundColor = entry.is_expense ? "red" : "green"
+
+    let date = row.insertCell(0)
+    let amount = row.insertCell(1)
+    let category = row.insertCell(2)
+
+    date.innerHTML = entry.date 
+    amount.innerHTML = entry.amount 
+    category.innerHTML = entry.category 
+
+    updateCategoryTotal(entry)
+
 }
 
 function loadTableFromCSV()
@@ -63,35 +119,23 @@ function loadTableFromCSV()
     }
 
     let data = fs.readFileSync("assets/data.csv").toString()
-
     var header = "Date,Amount,Category\n"
     var index = data.indexOf(header)
     if (index != 0){
         console.log("CSV file not formatted correctly")
         return
     }
-
     data = data.substr(header.length)
 
     let entries = data.split("\n")
-    let table = document.getElementById('history-table')
 
     entries.forEach((value) => {
-        let row = table.insertRow(1)
         let values = value.split(",")
-
-        let amount = parseFloat(values[1])
-        updateCategoryTotal(values[2], amount.toFixed(2), amount < 0)
-        row.style.backgroundColor = amount < 0 ? "red" : "green"
-
-        for (let i = 0; i < 3; ++i){
-            let cell = row.insertCell(i)
-            cell.innerHTML = values[i]
-        }
+        let entry = new Entry(values[0], parseFloat(values[1]), values[2])
+        addEntry(entry)
     })
 }
 
-loadTableFromCSV()
 
 function saveTableAsCSV()
 {
@@ -126,21 +170,9 @@ income_button.addEventListener('click', () =>{
 })
 
 ipcRenderer.on('addEntry', (event, args) => {
-    let table = document.getElementById('history-table')
-    
-    let row = table.insertRow(1)
-    row.style.backgroundColor = parseFloat(args[1]) < 0 ? "red" : "green"
+    let entry = new Entry(args[0], parseFloat(args[1]), args[2])
+    addEntry(entry)
 
-    let date = row.insertCell(0)
-    let amount = row.insertCell(1)
-    let category = row.insertCell(2)
-
-    date.innerHTML = args[0]
-    amount.innerHTML = args[1]
-    category.innerHTML = args[2]
-
-    updateCategoryTotal(args[2], args[1], args[1] < 0)
     saveTableAsCSV()
-
 })
 
