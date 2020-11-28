@@ -1,5 +1,6 @@
 const { ipcRenderer, remote } = require('electron')
 const fs = require('fs')
+const { maxHeaderSize } = require('http')
 
 class Entry{
     constructor(date, amount, category){
@@ -8,11 +9,20 @@ class Entry{
         this.category = category
         this.is_expense = amount < 0 ? true : false
     }
+
+    getTime()
+    {
+        let new_date = new Date(this.date)
+        return new_date.getTime()
+    }
 }
 
 var expense_total = 0
 var income_total = 0
 var history_data = []
+var visible_entries = []
+var visible_start_time = 0
+var visible_end_time = Infinity
 
 loadTableFromCSV()
 
@@ -33,8 +43,6 @@ function updateTotalPercentages(is_expense)
     net_income_text.innerHTML = net_income
 
     net_income_text.style.color = net_income < 0 ? "red" : "green" 
-
-
 }
 
 function updateCategoryTotal(entry)
@@ -69,34 +77,10 @@ function updateCategoryTotal(entry)
     updateTotalPercentages(entry.is_expense)
 }
 
-function insertIntoHistory(entry)
-{
-    let left = 0
-    let right = history_data.length
-
-    let entry_date = new Date(entry.date)
-    let entry_time = entry_date.getTime()
-    while (left < right){
-        let mid = Math.trunc((left +right) / 2)
-        let history_entry = history_data[mid]
-        let history_date = new Date(history_entry.date)
-        let history_time = history_date.getTime()
-        if (entry_time < history_time){
-            right = mid
-        }
-        else{
-            left = mid+1
-        }
-        
-    }
-    history_data.splice(left, 0, entry)
-    return left 
-}
-function addEntry(entry)
+function AddEntryToHistoryTable(entry, index)
 {
     let table = document.getElementById("history-table")
     
-    let index = insertIntoHistory(entry)
     let row = table.insertRow(index + 1)
     row.style.backgroundColor = entry.is_expense ? "red" : "green"
 
@@ -108,8 +92,87 @@ function addEntry(entry)
     amount.innerHTML = entry.amount 
     category.innerHTML = entry.category 
 
+    visible_entries.splice(index, 0, entry)
     updateCategoryTotal(entry)
+}
 
+function showEntriesInTable(entries)
+{
+    expense_total = 0
+    income_total = 0
+    let table = document.getElementById("history-table")
+    let num_rows = table.rows.length
+    for ( i = 1; i < num_rows; ++i){
+        table.deleteRow(1)
+    }
+
+    let income_table = document.getElementById("income-table")
+    num_rows = income_table.rows.length
+    for ( i = 1; i < num_rows; ++i){
+        income_table.deleteRow(1)
+    }
+
+    let expense_table = document.getElementById("expense-table")
+    num_rows = expense_table.rows.length
+    for ( let i = 1; i < num_rows; ++i){
+        expense_table.deleteRow(1)
+    }
+
+    for (let i = 0; i < entries.length; ++i){
+        AddEntryToHistoryTable(entries[i], i)
+    }
+}
+
+function getVisibleEntries()
+{
+    if (history_data.length === 0) return []
+    if (history_data[0].getTime() < visible_start_time) return []
+    if (history_data[history_data.length-1] > visible_end_time) return []
+
+    let index = getDataInsertionIndex(visible_end_time, false)
+
+    let valid_entries = []
+    while (index < history_data.length){
+        let entry = history_data[index]
+        if (entry.getTime() >= visible_start_time){
+            valid_entries.push(entry)
+            ++index;
+        }
+        else{
+            break;
+        }
+    }
+
+    return valid_entries;
+}
+
+function getDataInsertionIndex(time, visible_only)
+{
+    if (visible_only){
+        if (time < visible_start_time || time > visible_end_time){
+            return -1;
+        }
+    }
+    let data = visible_only ? visible_entries : history_data
+    
+    for (i = 0; i < data.length; ++i){
+        if (time >= data[i].getTime()){
+            return i
+        }
+    }
+    return data.length;
+}
+
+function addEntry(entry)
+{
+    let index = getDataInsertionIndex(entry.getTime(), false);
+    if (index === history_data.length) history_data.push(entry)
+    else history_data.splice(index, 0, entry)
+
+    let visible_index = getDataInsertionIndex(entry.getTime(), true)
+    if (visible_index !== -1){
+        AddEntryToHistoryTable(entry, visible_index)
+    }
 }
 
 function loadTableFromCSV()
@@ -137,21 +200,18 @@ function loadTableFromCSV()
 }
 
 
-function saveTableAsCSV()
+function saveHistoryAsCSV()
 {
     var csv = []
+    csv.push("Date,Amount,Category")
 
-    let table = document.getElementById("history-table")
-    var rows = table.querySelectorAll("tr")
-
-    for (var i = 0; i < rows.length; ++i){
+    for (var i = 0; i < history_data.length; ++i){
         var row = []
-        var cols = rows[i].querySelectorAll("td, th")
 
-        for (var j = 0; j < cols.length; ++j){
-            row.push(cols[j].innerHTML)
-        }
-
+        let entry = history_data[i]
+        row.push(entry.date)
+        row.push(entry.amount)
+        row.push(entry.category)
         csv.push(row.join(","))
     }
 
@@ -169,10 +229,24 @@ income_button.addEventListener('click', () =>{
     ipcRenderer.send('add-entry-clicked', false)
 })
 
+var income_button = document.getElementById("submit-btn")
+income_button.addEventListener('click', () =>{
+    let start_string = document.getElementById("start-date").value.toString()
+    let start_date = new Date(start_string)
+    visible_start_time = start_date.getTime()
+
+    let end_string = document.getElementById("end-date").value.toString()
+    let end_date = new Date(end_string)
+    visible_end_time = end_date.getTime()
+
+    let entries = getVisibleEntries()
+    showEntriesInTable(entries)
+})
+
 ipcRenderer.on('addEntry', (event, args) => {
     let entry = new Entry(args[0], parseFloat(args[1]), args[2])
     addEntry(entry)
 
-    saveTableAsCSV()
+    saveHistoryAsCSV()
 })
 
