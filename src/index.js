@@ -155,12 +155,17 @@ function getDataInsertionIndex(time, visible_only)
     }
     let data = visible_only ? visible_entries : history_data
     
-    for (i = 0; i < data.length; ++i){
-        if (time >= data[i].getTime()){
-            return i
+    let left = 0
+    let right = data.length
+    while (left < right){
+        mid = (left + right) >>> 1
+        if (data[mid].getTime() > time){
+            left = mid + 1
+        }else{
+            right = mid
         }
     }
-    return data.length;
+    return left
 }
 
 function addEntry(entry)
@@ -217,6 +222,21 @@ function saveHistoryAsCSV()
 
     csv = csv.join("\n")
     fs.writeFileSync("assets/data.csv", csv)
+}
+
+function populateTestEntries()
+{
+    addEntry(new Entry("2020-11-02", 2, "Housing"))
+    addEntry(new Entry("2020-11-04", 2, "Housing"))
+    addEntry(new Entry("2020-11-05", 2, "Housing"))
+    addEntry(new Entry("2020-11-02", 2, "Housing"))
+    addEntry(new Entry("2020-11-08", 2, "Housing"))
+    addEntry(new Entry("2020-11-08", 2, "Housing"))
+    addEntry(new Entry("2020-11-08", 2, "Housing"))
+    addEntry(new Entry("2020-11-03", 2, "Housing"))
+    addEntry(new Entry("2020-11-01", 2, "Housing"))
+    addEntry(new Entry("2020-11-09", 2, "Housing"))
+    addEntry(new Entry("2020-11-07", 2, "Housing"))
 }
 
 var expense_button = document.getElementById("expense-btn")
