@@ -84,10 +84,16 @@ function AddEntryToHistoryTable(entry, index)
     let row = table.insertRow(index + 1)
     row.style.backgroundColor = entry.is_expense ? "red" : "green"
 
-    let date = row.insertCell(0)
-    let amount = row.insertCell(1)
-    let category = row.insertCell(2)
+    let edit = row.insertCell(0)
+    edit.addEventListener("click", () =>{
+        let data_index = history_data.findIndex(element => element === entry)
+        ipcRenderer.send('edit-entry-clicked', entry, data_index)
+    })
+    let date = row.insertCell(1)
+    let amount = row.insertCell(2)
+    let category = row.insertCell(3)
 
+    edit.innerHTML = "Edit"
     date.innerHTML = entry.date 
     amount.innerHTML = entry.amount 
     category.innerHTML = entry.category 
@@ -270,3 +276,16 @@ ipcRenderer.on('addEntry', (event, args) => {
     saveHistoryAsCSV()
 })
 
+ipcRenderer.on('update-entries', (event, args, index) => {
+    history_data[index] = new Entry(args[0], parseFloat(args[1]), args[2])
+    saveHistoryAsCSV()
+    let entries = getVisibleEntries()
+    showEntriesInTable(entries)
+})
+
+ipcRenderer.on('deleteEntry', (event, index) => {
+    history_data.splice(index, 1)
+    saveHistoryAsCSV()
+    let entries = getVisibleEntries()
+    showEntriesInTable(entries)
+})

@@ -1,6 +1,8 @@
 const {ipcRenderer, remote} = require('electron')
 
-var is_expense = true
+var expense = true
+var entry_index = -1
+
 function isValidInput()
 {
     let date = document.getElementById('date-input').valueAsDate
@@ -24,7 +26,7 @@ submit_btn.addEventListener('click', () =>{
     if (!isValidInput()) return
 
     let amount = document.getElementById('amount-input').value.toString()
-    if (remote.getGlobal("is_expense")) {
+    if (expense) {
         amount = "-" + amount
     }
 
@@ -34,13 +36,45 @@ submit_btn.addEventListener('click', () =>{
         document.getElementById('category-input').value.toString()
     ]
 
-    ipcRenderer.send('entry-added', data)
     let win = remote.getCurrentWindow()
+
+    if (entry_index !== -1){
+        ipcRenderer.send('entry-edited', data, entry_index)
+        entry_index = -1
+        win.close()
+        return
+    }
+    ipcRenderer.send('entry-added', data)
     win.close()
 })
 
 var cancel_btn = document.getElementById('cancel-btn')
 cancel_btn.addEventListener('click', () =>{
+    editing_entry = null
     let win = remote.getCurrentWindow()
     win.close()
+})
+
+var delete_btn = document.getElementById('delete-btn')
+delete_btn.addEventListener('click', () =>{
+    ipcRenderer.send('entry-deleted', entry_index)
+    entry_index = -1
+    let win = remote.getCurrentWindow()
+    win.close()
+})
+
+ipcRenderer.on('setEntryData', (event, entry, index) =>{
+    let date = new Date(entry.date)
+    expense = entry.amount < 0
+    document.getElementById('date-input').valueAsDate = date
+    document.getElementById('amount-input').value = Math.abs(entry.amount) 
+    document.getElementById('category-input').value = entry.category
+
+    entry_index = index
+})
+
+ipcRenderer.on('set_is_expense', (event, is_expense) => {
+    let delete_btn = document.getElementById('delete-btn')
+    delete_btn.style.visibility = 'hidden'
+    expense = is_expense;
 })
