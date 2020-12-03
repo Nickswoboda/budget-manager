@@ -1,80 +1,62 @@
 const {ipcRenderer, remote} = require('electron')
 
 var expense = true
-var entry_index = -1
+var entry_edited = null
+var win = remote.getCurrentWindow()
+
+//set date as todays date by default
+document.getElementById('date-input').valueAsDate = new Date()
 
 function isValidInput()
 {
     let date = document.getElementById('date-input').valueAsDate
-    let year = date.getFullYear()
-    if (year < 1000 || year > 3000) return false
-    let month = date.getMonth()
-    if (month < 0 || month > 12) return false
+    if (date.getFullYear() < 1000 || date.getFullYear() > 3000) return false
+    if (date.getMonth() < 0 || date.getMonth() > 12) return false
+
     let days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    let day = date.getDate()
-    if (day < 1 || day > days_in_month[month]) return false
+    if (date.getDate() < 1 || date.getDate() > days_in_month[date.getMonth()]) return false
 
     let amount = document.getElementById('amount-input').valueAsNumber
     if (isNaN(amount) || amount === 0) return false
 
     return true
 }
-document.getElementById('date-input').valueAsDate = new Date()
-var submit_btn = document.getElementById('submit-btn')
-
-submit_btn.addEventListener('click', () =>{
+document.getElementById('submit-btn').addEventListener('click', () =>{
     if (!isValidInput()) return
 
-    let amount = document.getElementById('amount-input').value.toString()
-    if (expense) {
-        amount = "-" + amount
+    let value = parseFloat(document.getElementById('amount-input').value.toString())
+
+    var data = {
+        date : document.getElementById('date-input').value.toString(),
+        amount : expense ? -value : value,
+        category : document.getElementById('category-input').value.toString(),
+        index : entry_edited === null ? -1 : entry_edited.index
     }
 
-    var data = [
-        document.getElementById('date-input').value.toString(),
-        amount,
-        document.getElementById('category-input').value.toString()
-    ]
+    ipcRenderer.send('entry-submitted', data)
+    win.close()
+})
 
-    let win = remote.getCurrentWindow()
+document.getElementById('cancel-btn').addEventListener('click', () =>{
+    win.close()
+})
 
-    if (entry_index !== -1){
-        ipcRenderer.send('entry-edited', data, entry_index)
-        entry_index = -1
-        win.close()
-        return
+delete_btn = document.getElementById('delete-btn').addEventListener('click', () =>{
+    ipcRenderer.send('entry-deleted', entry_edited.index)
+    win.close()
+})
+
+ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{
+    entry_edited = entry
+    expense = is_expense
+
+    if (entry === null){
+        let delete_btn = document.getElementById('delete-btn')
+        delete_btn.style.visibility = 'hidden'
+    } else {
+        let date = new Date(entry.date)
+        document.getElementById('date-input').valueAsDate = date
+        document.getElementById('amount-input').value = Math.abs(entry.amount) 
+        document.getElementById('category-input').value = entry.category
     }
-    ipcRenderer.send('entry-added', data)
-    win.close()
-})
-
-var cancel_btn = document.getElementById('cancel-btn')
-cancel_btn.addEventListener('click', () =>{
-    editing_entry = null
-    let win = remote.getCurrentWindow()
-    win.close()
-})
-
-var delete_btn = document.getElementById('delete-btn')
-delete_btn.addEventListener('click', () =>{
-    ipcRenderer.send('entry-deleted', entry_index)
-    entry_index = -1
-    let win = remote.getCurrentWindow()
-    win.close()
-})
-
-ipcRenderer.on('setEntryData', (event, entry, index) =>{
-    let date = new Date(entry.date)
-    expense = entry.amount < 0
-    document.getElementById('date-input').valueAsDate = date
-    document.getElementById('amount-input').value = Math.abs(entry.amount) 
-    document.getElementById('category-input').value = entry.category
-
-    entry_index = index
-})
-
-ipcRenderer.on('set_is_expense', (event, is_expense) => {
-    let delete_btn = document.getElementById('delete-btn')
-    delete_btn.style.visibility = 'hidden'
-    expense = is_expense;
 })

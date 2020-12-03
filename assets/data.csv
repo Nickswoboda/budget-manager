@@ -1,6 +1,9 @@
 Date,Amount,Category
-2020-12-02,22,Housing
-2020-12-02,-22,Housing
-2020-12-02,11122,Housing
-2020-12-02,-1122,Housing
-2020-12-02,-22,Housing
+2020-12-03,-22,Transportation
+2020-12-03,-11,Housing
+2020-12-03,11,Transportation
+2020-12-03,22,Housing
+2020-12-03,-22,Housing
+2020-12-03,222,Housing
+2020-12-03,222,Housing
+2020-12-03,-22,Housing

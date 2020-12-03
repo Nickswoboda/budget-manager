@@ -8,6 +8,7 @@ class Entry{
         this.amount = amount 
         this.category = category
         this.is_expense = amount < 0 ? true : false
+        this.index = -1  
     }
 
     getTime()
@@ -26,6 +27,12 @@ var visible_end_time = Infinity
 
 loadTableFromCSV()
 
+function addCellToRow(row, cell_idx, text)
+{
+    let cell = row.insertCell(cell_idx)
+    cell.innerHTML = text
+    return cell
+}
 function updateTotalPercentages(is_expense)
 {
     let table = is_expense ? document.getElementById("expense-table") : document.getElementById("income-table")
@@ -33,15 +40,12 @@ function updateTotalPercentages(is_expense)
     for (i = 1; i < table.rows.length; ++i){
         let amount = parseFloat(table.rows[i].cells[1].innerHTML)
         let total = is_expense ? expense_total : income_total
-        let percentage = amount / total * 100
-        table.rows[i].cells[2].innerHTML = percentage
+        table.rows[i].cells[2].innerHTML = amount / total * 100
     }
 
-    let net_income = income_total + expense_total
-    
+    let net_income = expense_total + income_total
     let net_income_text = document.getElementById("net-income")
-    net_income_text.innerHTML = net_income
-
+    net_income_text.innerHTML = net_income 
     net_income_text.style.color = net_income < 0 ? "red" : "green" 
 }
 
@@ -56,24 +60,21 @@ function updateCategoryTotal(entry)
     }
 
     for (i = 0; i < table.rows.length; ++i){
+        //if category exists in table, just update and return
         row_category = table.rows[i].cells[0].innerHTML
         if (row_category === entry.category){
             let amount_cell = table.rows[i].cells[1]
-            let new_amount = parseFloat(amount_cell.innerHTML) + entry.amount 
-            amount_cell.innerHTML = new_amount
+            amount_cell.innerHTML = parseFloat(amount_cell.innerHTML) + entry.amount 
             updateTotalPercentages(entry.is_expense)
             return
         }
     }
 
     var new_row = table.insertRow(1)
-    let category_cell = new_row.insertCell(0)
-    let amount_cell = new_row.insertCell(1)
-
-    category_cell.innerHTML = entry.category 
-    amount_cell.innerHTML = entry.amount 
-
+    addCellToRow(new_row, 0, entry.category)
+    addCellToRow(new_row, 1, entry.amount)
     new_row.insertCell(2)
+
     updateTotalPercentages(entry.is_expense)
 }
 
@@ -84,45 +85,35 @@ function AddEntryToHistoryTable(entry, index)
     let row = table.insertRow(index + 1)
     row.style.backgroundColor = entry.is_expense ? "red" : "green"
 
-    let edit = row.insertCell(0)
+    let edit = addCellToRow(row, 0, "Edit") 
     edit.addEventListener("click", () =>{
-        let data_index = history_data.findIndex(element => element === entry)
-        ipcRenderer.send('edit-entry-clicked', entry, data_index)
+        entry.index = history_data.findIndex(element => element === entry)
+        ipcRenderer.send('edit-entry-clicked', entry)
     })
-    let date = row.insertCell(1)
-    let amount = row.insertCell(2)
-    let category = row.insertCell(3)
 
-    edit.innerHTML = "Edit"
-    date.innerHTML = entry.date 
-    amount.innerHTML = entry.amount 
-    category.innerHTML = entry.category 
+    addCellToRow(row, 1, entry.date)
+    addCellToRow(row, 2, entry.amount)
+    addCellToRow(row, 3, entry.category)
 
     visible_entries.splice(index, 0, entry)
     updateCategoryTotal(entry)
 }
 
-function showEntriesInTable(entries)
-{
-    expense_total = 0
-    income_total = 0
-    let table = document.getElementById("history-table")
+function resetTable(table_name){
+    let table = document.getElementById(table_name)
     let num_rows = table.rows.length
     for ( i = 1; i < num_rows; ++i){
         table.deleteRow(1)
     }
+}
+function showEntriesInTable(entries)
+{
+    expense_total = 0
+    income_total = 0
 
-    let income_table = document.getElementById("income-table")
-    num_rows = income_table.rows.length
-    for ( i = 1; i < num_rows; ++i){
-        income_table.deleteRow(1)
-    }
-
-    let expense_table = document.getElementById("expense-table")
-    num_rows = expense_table.rows.length
-    for ( let i = 1; i < num_rows; ++i){
-        expense_table.deleteRow(1)
-    }
+    resetTable("history-table");
+    resetTable("income-table");
+    resetTable("expense-table");
 
     for (let i = 0; i < entries.length; ++i){
         AddEntryToHistoryTable(entries[i], i)
@@ -159,6 +150,7 @@ function getDataInsertionIndex(time, visible_only)
             return -1;
         }
     }
+
     let data = visible_only ? visible_entries : history_data
     
     let left = 0
@@ -177,8 +169,7 @@ function getDataInsertionIndex(time, visible_only)
 function addEntry(entry)
 {
     let index = getDataInsertionIndex(entry.getTime(), false);
-    if (index === history_data.length) history_data.push(entry)
-    else history_data.splice(index, 0, entry)
+    history_data.splice(index, 0, entry)
 
     let visible_index = getDataInsertionIndex(entry.getTime(), true)
     if (visible_index !== -1){
@@ -245,39 +236,32 @@ function populateTestEntries()
     addEntry(new Entry("2020-11-07", 2, "Housing"))
 }
 
-var expense_button = document.getElementById("expense-btn")
-expense_button.addEventListener('click', () =>{
+document.getElementById("expense-btn").addEventListener('click', () =>{
     ipcRenderer.send('add-entry-clicked', true)
 })
 
-var income_button = document.getElementById("income-btn")
-income_button.addEventListener('click', () =>{
+document.getElementById("income-btn").addEventListener('click', () =>{
     ipcRenderer.send('add-entry-clicked', false)
 })
 
-var income_button = document.getElementById("submit-btn")
-income_button.addEventListener('click', () =>{
-    let start_string = document.getElementById("start-date").value.toString()
-    let start_date = new Date(start_string)
-    visible_start_time = start_date.getTime()
+document.getElementById("submit-btn").addEventListener('click', () =>{
 
-    let end_string = document.getElementById("end-date").value.toString()
-    let end_date = new Date(end_string)
-    visible_end_time = end_date.getTime()
+    visible_start_time = document.getElementById("start-date").valueAsDate.getTime()
+    visible_end_time = document.getElementById("end-date").valueAsDate.getTime()
 
     let entries = getVisibleEntries()
     showEntriesInTable(entries)
 })
 
-ipcRenderer.on('addEntry', (event, args) => {
-    let entry = new Entry(args[0], parseFloat(args[1]), args[2])
+ipcRenderer.on('addEntry', (event, data) => {
+    let entry = new Entry(data.date, data.amount, data.category) 
     addEntry(entry)
 
     saveHistoryAsCSV()
 })
 
-ipcRenderer.on('update-entries', (event, args, index) => {
-    history_data[index] = new Entry(args[0], parseFloat(args[1]), args[2])
+ipcRenderer.on('update-entries', (event, data) => {
+    history_data[data.index] = new Entry(data.date, data.amount, data.category) 
     saveHistoryAsCSV()
     let entries = getVisibleEntries()
     showEntriesInTable(entries)

@@ -31,7 +31,7 @@ app.on('activate', () => {
     }
 })
 
-function createEntryWindow()
+function createEntryWindow(is_expense, entry)
 {
     let popup = new BrowserWindow({
         width: 500,
@@ -46,33 +46,30 @@ function createEntryWindow()
         popup = null
     })
     popup.loadFile('src/add-entry.html')
+    popup.once('ready-to-show', () =>{
+        popup.show()
+        popup.webContents.send('initialize-popup', is_expense, entry)
+    })
+
     popup.webContents.openDevTools()
 
     return popup
 }
 ipcMain.on('add-entry-clicked', (event, is_expense) => {
-    let popup = createEntryWindow()
-    popup.once('ready-to-show', () =>{
-        popup.show()
-        popup.webContents.send('set_is_expense', is_expense)
-    })
-
+    createEntryWindow(is_expense, null)
 })
-ipcMain.on('edit-entry-clicked', (event, entry, index) => {
-    let popup = createEntryWindow()
-    popup.once('ready-to-show', () =>{
-        popup.show()
-        popup.webContents.send('setEntryData', entry, index)
-    })
-
+ipcMain.on('edit-entry-clicked', (event, entry) => {
+    createEntryWindow(entry.amount < 0, entry)
 })
 
-ipcMain.on('entry-added', (event, entry) =>{
-    win.webContents.send('addEntry', entry)
-})
-
-ipcMain.on('entry-edited', (event, entry, index ) =>{
-    win.webContents.send('update-entries', entry, index)
+ipcMain.on('entry-submitted', (event, data) =>
+{
+    if (data.index === -1){
+        win.webContents.send('addEntry', data)
+    }
+    else{
+        win.webContents.send('update-entries', data)
+    }
 })
 
 ipcMain.on('entry-deleted', (event, index ) =>{
