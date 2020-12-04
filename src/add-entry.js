@@ -42,8 +42,7 @@ document.getElementById('cancel-btn').addEventListener('click', () =>{
 })
 
 delete_btn = document.getElementById('delete-btn').addEventListener('click', () =>{
-    ipcRenderer.send('entry-deleted', entry_edited.index)
-    win.close()
+    ipcRenderer.send('delete-entry-requested', entry_edited.index);
 })
 
 ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{

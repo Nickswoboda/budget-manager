@@ -1,7 +1,8 @@
 const { assert } = require('console')
-const {app, BrowserWindow, ipcMain } = require('electron')
+const {app, BrowserWindow, ipcMain, dialog } = require('electron')
 
 let win = null
+let popup = null
 
 function createWindow(){
     win = new BrowserWindow({
@@ -33,10 +34,12 @@ app.on('activate', () => {
 
 function createEntryWindow(is_expense, entry)
 {
-    let popup = new BrowserWindow({
+    popup = new BrowserWindow({
         width: 500,
         height: 500,
         frame: false,
+        parent: win,
+        modal: true,
         webPreferences:{
             nodeIntegration: true,
             enableRemoteModule: true
@@ -52,8 +55,6 @@ function createEntryWindow(is_expense, entry)
     })
 
     popup.webContents.openDevTools()
-
-    return popup
 }
 ipcMain.on('add-entry-clicked', (event, is_expense) => {
     createEntryWindow(is_expense, null)
@@ -72,6 +73,18 @@ ipcMain.on('entry-submitted', (event, data) =>
     }
 })
 
-ipcMain.on('entry-deleted', (event, index ) =>{
-    win.webContents.send('deleteEntry', index)
+ipcMain.on('delete-entry-requested', (event, entry_index ) =>{
+    const options = {
+        type: 'info',
+        title: 'Confirmation',
+        message: "Are you sure you want to delete the entry?",
+        buttons: ['Yes', 'No']
+    }
+    dialog.showMessageBox(options).then(result => {
+        if (result.response === 0){
+            win.webContents.send('deleteEntry', entry_index)
+            popup.close()
+        }
+    })
+
 })
