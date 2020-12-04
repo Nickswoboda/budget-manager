@@ -54,7 +54,7 @@ function createEntryWindow(is_expense, entry)
         popup.webContents.send('initialize-popup', is_expense, entry)
     })
 
-    popup.webContents.openDevTools()
+    //popup.webContents.openDevTools()
 }
 ipcMain.on('add-entry-clicked', (event, is_expense) => {
     createEntryWindow(is_expense, null)

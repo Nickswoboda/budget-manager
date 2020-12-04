@@ -110,6 +110,8 @@ function showEntriesInTable(entries)
 {
     expense_total = 0
     income_total = 0
+    document.getElementById("net-income").innerHTML = 0;
+
 
     resetTable("history-table");
     resetTable("income-table");
@@ -122,6 +124,7 @@ function showEntriesInTable(entries)
 
 function getVisibleEntries()
 {
+    visible_entries = []
     if (history_data.length === 0) return []
     if (history_data[0].getTime() < visible_start_time) return []
     if (history_data[history_data.length-1] > visible_end_time) return []
@@ -269,6 +272,7 @@ ipcRenderer.on('update-entries', (event, data) => {
 
 ipcRenderer.on('deleteEntry', (event, index) => {
     history_data.splice(index, 1)
+    
     saveHistoryAsCSV()
     let entries = getVisibleEntries()
     showEntriesInTable(entries)
