@@ -1,0 +1,23 @@
+{
+    "income" : [
+        "Paycheck",
+        "Investment",
+        "Refund",
+        "Bonus",
+        "Interest",
+        "Reimbursment"
+    ],
+    "expense" : {
+        "Housing" : ["Rent", "Repairs"],
+        "Transportation" : ["Gas", "Insurance"],
+        "Food" : ["Dining", "Groceries", "Coffee"],
+        "Utilities" : ["Gas", "Water", "Internet"],
+        "Shopping" : ["Clothes", "Hobbies"],
+        "Healthcare" : ["Gym Membership", "Doctor Visit"],
+        "Household Items" : ["Detergent", "TP"],
+        "Education" : ["Tuition", "Books"],
+        "Savings" : ["401k", "IRA"],
+        "Entertainment" : ["Movies", "Netflex"],
+        "Travel" : ["Gas", "Hotel"]
+    }
+}
