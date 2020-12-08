@@ -8,11 +8,21 @@
 </head>
 <body>
     <button id="expense-btn">Add Expense</button>
-    <button id="income-btn">Add Income</button>
+    <button id="income-btn">Add Income</button><br><br><br>
     <div>
-        <input type="date" id="start-date">
-        <input type="date" id="end-date">
-        <button id="submit-btn">Submit</button>
+        <label for="date-search">Date Range: </label>
+        <select id="date-search-select">
+            <option value="all-time">All Time</option>
+            <option value="past-year">Past Year</option>
+            <option value="past-month">Past Month</option>
+            <option value="past-week">Past Week</option>
+            <option value="custom">Custom</option>
+        </select><br>
+        <div id="custom-date-search" style="visibility: hidden;">
+            <input type="date" id="start-date">
+            <input type="date" id="end-date">
+            <button id="submit-btn">Submit</button>
+        </div>
     </div>
     <div>
         <h1>History</h1>
@@ -47,6 +57,7 @@
     </div>
     <h1>Net Income:</h1>
     <h2 id="net-income"></h2>
+    <script src="search.js"></script>
     <script src="index.js"></script>
 </body>
 </html>

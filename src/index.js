@@ -29,8 +29,6 @@ var expense_total = 0
 var income_total = 0
 var history_data = []
 var visible_entries = []
-var visible_start_time = 0
-var visible_end_time = Infinity
 
 loadTableFromCSV()
 
@@ -136,53 +134,6 @@ function showEntriesInTable(entries)
     }
 }
 
-function getVisibleEntries()
-{
-    visible_entries = []
-    if (history_data.length === 0) return []
-    if (history_data[0].getTime() < visible_start_time) return []
-    if (history_data[history_data.length-1] > visible_end_time) return []
-
-    let index = getDataInsertionIndex(visible_end_time, false)
-
-    let valid_entries = []
-    while (index < history_data.length){
-        let entry = history_data[index]
-        if (entry.getTime() >= visible_start_time){
-            valid_entries.push(entry)
-            ++index;
-        }
-        else{
-            break;
-        }
-    }
-
-    return valid_entries;
-}
-
-function getDataInsertionIndex(time, visible_only)
-{
-    if (visible_only){
-        if (time < visible_start_time || time > visible_end_time){
-            return -1;
-        }
-    }
-
-    let data = visible_only ? visible_entries : history_data
-    
-    let left = 0
-    let right = data.length
-    while (left < right){
-        mid = (left + right) >>> 1
-        if (data[mid].getTime() > time){
-            left = mid + 1
-        }else{
-            right = mid
-        }
-    }
-    return left
-}
-
 function addEntry(entry)
 {
     let index = getDataInsertionIndex(entry.getTime(), false);
@@ -261,15 +212,6 @@ document.getElementById("expense-btn").addEventListener('click', () =>{
 
 document.getElementById("income-btn").addEventListener('click', () =>{
     ipcRenderer.send('add-entry-clicked', false)
-})
-
-document.getElementById("submit-btn").addEventListener('click', () =>{
-
-    visible_start_time = document.getElementById("start-date").valueAsDate.getTime()
-    visible_end_time = document.getElementById("end-date").valueAsDate.getTime()
-
-    let entries = getVisibleEntries()
-    showEntriesInTable(entries)
 })
 
 ipcRenderer.on('addEntry', (event, data) => {
