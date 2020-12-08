@@ -3,21 +3,20 @@
         "Paycheck",
         "Investment",
         "Refund",
-        "Bonus",
-        "Interest",
-        "Reimbursment"
+        "Bonus"
     ],
     "expense" : {
-        "Housing" : ["Rent", "Repairs"],
-        "Transportation" : ["Gas", "Insurance"],
-        "Food" : ["Dining", "Groceries", "Coffee"],
-        "Utilities" : ["Gas", "Water", "Internet"],
-        "Shopping" : ["Clothes", "Hobbies"],
-        "Healthcare" : ["Gym Membership", "Doctor Visit"],
-        "Household Items" : ["Detergent", "TP"],
-        "Education" : ["Tuition", "Books"],
-        "Savings" : ["401k", "IRA"],
-        "Entertainment" : ["Movies", "Netflex"],
-        "Travel" : ["Gas", "Hotel"]
+        "Housing" : ["Rent", "Repairs", "Insurance"],
+        "Transportation" : ["Gas", "Maintenance", "Insurance", "Registration"],
+        "Food" : ["Dining", "Groceries", "Snacks"],
+        "Utilities" : ["Gas", "Water", "Electricity", "Internet", "Trash", "Cellphone"],
+        "Shopping" : ["Clothes", "Hobby", "Household Item"],
+        "Healthcare" : ["Gym Membership", "Doctor Visit", "Medication"],
+        "Debt" : ["Credit Card", "Student Loan"],
+        "Savings" : ["Emergency Fund", "Retirement"],
+        "Entertainment" : ["Games", "Movies", "Subscriptions"],
+        "Travel" : ["Flight", "Rental Car", "Gas", "Hotel"],
+        "Pet" : ["Food", "Grooming", "Insurance", "Supplies", "Vet Visit"],
+        "Miscellaneous" : []
     }
 }

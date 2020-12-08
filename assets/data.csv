@@ -1,1 +1,3 @@
-Date,Amount,Category,Subcategory
+Date,Amount,Category,Subcategory,Note
+2020-12-08,-22,Utilities,Electricity,22watts
+2020-12-08,22,Paycheck,,Netflix 222222222222222222222222222

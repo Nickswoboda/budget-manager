@@ -3,19 +3,25 @@ const fs = require('fs')
 const { maxHeaderSize } = require('http')
 
 class Entry{
-    constructor(date, amount, category, subcategory = ""){
+    constructor(date, amount, category, subcategory = "", note = ""){
         this.date = date 
         this.amount = amount 
         this.category = category
         this.subcategory = subcategory 
         this.is_expense = amount < 0 ? true : false
         this.index = -1  
+        this.note = note 
     }
 
     getTime()
     {
         let new_date = new Date(this.date)
         return new_date.getTime()
+    }
+    setAmount(amount)
+    {
+        this.amount = amount
+        this.is_expense = amount < 0
     }
 }
 
@@ -100,6 +106,8 @@ function AddEntryToHistoryTable(entry, index)
     }else{
         addCellToRow(row, 3, entry.subcategory)
     }
+
+    addCellToRow(row, 4, entry.note)
 
     visible_entries.splice(index, 0, entry)
     updateCategoryTotal(entry)
@@ -193,7 +201,7 @@ function loadTableFromCSV()
     }
 
     let data = fs.readFileSync("assets/data.csv").toString()
-    var header = "Date,Amount,Category,Subcategory\n"
+    var header = "Date,Amount,Category,Subcategory,Note\n"
     var index = data.indexOf(header)
     if (index != 0){
         console.log("CSV file not formatted correctly")
@@ -205,7 +213,7 @@ function loadTableFromCSV()
 
     entries.forEach((value) => {
         let values = value.split(",")
-        let entry = new Entry(values[0], parseFloat(values[1]), values[2], values[3])
+        let entry = new Entry(values[0], parseFloat(values[1]), values[2], values[3], values[4])
         addEntry(entry)
     })
 }
@@ -214,7 +222,7 @@ function loadTableFromCSV()
 function saveHistoryAsCSV()
 {
     var csv = []
-    csv.push("Date,Amount,Category,Subcategory")
+    csv.push("Date,Amount,Category,Subcategory,Note")
 
     for (var i = 0; i < history_data.length; ++i){
         var row = []
@@ -224,6 +232,7 @@ function saveHistoryAsCSV()
         row.push(entry.amount)
         row.push(entry.category)
         row.push(entry.subcategory)
+        row.push(entry.note)
         csv.push(row.join(","))
     }
 
@@ -264,14 +273,14 @@ document.getElementById("submit-btn").addEventListener('click', () =>{
 })
 
 ipcRenderer.on('addEntry', (event, data) => {
-    let entry = new Entry(data.date, data.amount, data.category, data.subcategory) 
+    let entry = new Entry(data.date, data.amount, data.category, data.subcategory, data.note) 
     addEntry(entry)
 
     saveHistoryAsCSV()
 })
 
 ipcRenderer.on('update-entries', (event, data) => {
-    history_data[data.index] = new Entry(data.date, data.amount, data.category, data.subcategory) 
+    history_data[data.index] = new Entry(data.date, data.amount, data.category, data.subcategory, data.note) 
     saveHistoryAsCSV()
     let entries = getVisibleEntries()
     showEntriesInTable(entries)

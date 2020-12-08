@@ -35,7 +35,7 @@ app.on('activate', () => {
 function createEntryWindow(is_expense, entry)
 {
     popup = new BrowserWindow({
-        width: 500,
+        width: 300,
         height: 500,
         frame: false,
         parent: win,
@@ -54,13 +54,13 @@ function createEntryWindow(is_expense, entry)
         popup.webContents.send('initialize-popup', is_expense, entry)
     })
 
-    popup.webContents.openDevTools()
+    //popup.webContents.openDevTools()
 }
 ipcMain.on('add-entry-clicked', (event, is_expense) => {
     createEntryWindow(is_expense, null)
 })
 ipcMain.on('edit-entry-clicked', (event, entry) => {
-    createEntryWindow(entry.amount < 0, entry)
+    createEntryWindow(entry.is_expense, entry)
 })
 
 ipcMain.on('entry-submitted', (event, data) =>

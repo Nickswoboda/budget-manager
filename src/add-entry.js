@@ -83,7 +83,8 @@ document.getElementById('submit-btn').addEventListener('click', () =>{
         amount : expense ? -value : value,
         category : document.getElementById('category-input').value.toString(),
         subcategory : document.getElementById('subcat-input').value.toString(),
-        index : entry_edited === null ? -1 : entry_edited.index
+        index : entry_edited === null ? -1 : entry_edited.index,
+        note : document.getElementById('note-input').value.toString()
     }
 
     ipcRenderer.send('entry-submitted', data)
@@ -118,6 +119,7 @@ ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{
         document.getElementById('amount-input').value = Math.abs(entry.amount) 
         document.getElementById('category-input').value = entry.category
         document.getElementById('subcat-input').value = entry.subcategory
+        document.getElementById('note-input').value = entry.note
     }
 
 })
