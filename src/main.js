@@ -1,11 +1,12 @@
 const { assert } = require('console')
-const {app, BrowserWindow, ipcMain, dialog } = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, Menu } = require('electron')
 
-let win = null
-let popup = null
+let main_win = null
+let entry_win = null
+let category_win = null
 
-function createWindow(){
-    win = new BrowserWindow({
+function createMainWindow(){
+    main_win = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences:{
@@ -14,11 +15,11 @@ function createWindow(){
         }
     })
 
-    win.loadFile('src/index.html')
-    win.on('close', () => { app.quit()})
+    main_win.loadFile('src/index.html')
+    main_win.on('close', () => { app.quit()})
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(createMainWindow)
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin'){
@@ -28,34 +29,35 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0){
-        createWindow()
+        createMainWindow()
     }
 })
 
 function createEntryWindow(is_expense, entry)
 {
-    popup = new BrowserWindow({
+    entry_win = new BrowserWindow({
         width: 300,
         height: 500,
         frame: false,
-        parent: win,
+        parent: main_win,
         modal: true,
         webPreferences:{
             nodeIntegration: true,
             enableRemoteModule: true
         }
     })
-    popup.on('close', () => {
-        popup = null
+    entry_win.on('close', () => {
+        entry_win = null
     })
-    popup.loadFile('src/add-entry.html')
-    popup.once('ready-to-show', () =>{
-        popup.show()
-        popup.webContents.send('initialize-popup', is_expense, entry)
+    entry_win.loadFile('src/add-entry.html')
+    entry_win.once('ready-to-show', () =>{
+        entry_win.show()
+        entry_win.webContents.send('initialize-popup', is_expense, entry)
     })
 
-    //popup.webContents.openDevTools()
+    //entry_win.webContents.openDevTools()
 }
+
 ipcMain.on('add-entry-clicked', (event, is_expense) => {
     createEntryWindow(is_expense, null)
 })
@@ -66,10 +68,10 @@ ipcMain.on('edit-entry-clicked', (event, entry) => {
 ipcMain.on('entry-submitted', (event, data) =>
 {
     if (data.index === -1){
-        win.webContents.send('addEntry', data)
+        main_win.webContents.send('addEntry', data)
     }
     else{
-        win.webContents.send('update-entries', data)
+        main_win.webContents.send('update-entries', data)
     }
 })
 
@@ -82,8 +84,8 @@ ipcMain.on('delete-entry-requested', (event, entry_index ) =>{
     }
     dialog.showMessageBox(options).then(result => {
         if (result.response === 0){
-            win.webContents.send('deleteEntry', entry_index)
-            popup.close()
+            main_win.webContents.send('deleteEntry', entry_index)
+            entry_win.close()
         }
     })
 

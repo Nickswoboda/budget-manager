@@ -169,7 +169,6 @@ function loadTableFromCSV()
     })
 }
 
-
 function saveHistoryAsCSV()
 {
     var csv = []
