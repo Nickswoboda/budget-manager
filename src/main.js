@@ -1,9 +1,7 @@
-const { assert } = require('console')
-const {app, BrowserWindow, ipcMain, dialog, Menu } = require('electron')
+const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 
 let main_win = null
 let entry_win = null
-let category_win = null
 
 function createMainWindow(){
     main_win = new BrowserWindow({

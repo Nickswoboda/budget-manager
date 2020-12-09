@@ -38,6 +38,8 @@ document.getElementById("submit-btn").addEventListener('click', () =>{
 
     let entries = getVisibleEntries(start_time, end_time)
     showEntriesInTable(entries)
+
+    getRows()
 })
 
 function getVisibleEntries(start, end)

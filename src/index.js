@@ -1,6 +1,5 @@
-const { ipcRenderer, remote } = require('electron')
+const { ipcRenderer} = require('electron')
 const fs = require('fs')
-const { maxHeaderSize } = require('http')
 
 class Entry{
     constructor(date, amount, category, subcategory = "", note = ""){
@@ -139,6 +138,7 @@ function addEntry(entry)
     let index = getDataInsertionIndex(entry.getTime(), false);
     history_data.splice(index, 0, entry)
 
+    insertRow(entry.date.toString(), entry.amount, entry.category, entry.subcategory, entry.note)
     let visible_index = getDataInsertionIndex(entry.getTime(), true)
     if (visible_index !== -1){
         AddEntryToHistoryTable(entry, visible_index)
