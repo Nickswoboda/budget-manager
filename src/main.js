@@ -60,12 +60,12 @@ ipcMain.on('add-entry-clicked', (event, is_expense) => {
     createEntryWindow(is_expense, null)
 })
 ipcMain.on('edit-entry-clicked', (event, entry) => {
-    createEntryWindow(entry.is_expense, entry)
+    createEntryWindow(entry.amount < 0, entry)
 })
 
 ipcMain.on('entry-submitted', (event, data) =>
 {
-    if (data.index === -1){
+    if (data.id === -1){
         main_win.webContents.send('addEntry', data)
     }
     else{

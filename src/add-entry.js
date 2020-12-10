@@ -83,7 +83,7 @@ document.getElementById('submit-btn').addEventListener('click', () =>{
         amount : expense ? -value : value,
         category : document.getElementById('category-input').value.toString(),
         subcategory : document.getElementById('subcat-input').value.toString(),
-        index : entry_edited === null ? -1 : entry_edited.index,
+        id: entry_edited === null ? -1 : entry_edited.id,
         note : document.getElementById('note-input').value.toString()
     }
 
@@ -96,7 +96,7 @@ document.getElementById('cancel-btn').addEventListener('click', () =>{
 })
 
 delete_btn = document.getElementById('delete-btn').addEventListener('click', () =>{
-    ipcRenderer.send('delete-entry-requested', entry_edited.index);
+    ipcRenderer.send('delete-entry-requested', entry_edited.id);
 })
 
 ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{
