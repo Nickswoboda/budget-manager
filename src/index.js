@@ -1,5 +1,36 @@
 const { ipcRenderer} = require('electron')
 
+let start_time = 0
+let end_time = Number.MAX_SAFE_INTEGER
+
+let custom_date_div = document.getElementById("custom-date-search");
+document.getElementById("date-search-select").addEventListener('change', (event) =>{
+    if (event.target.value === "custom"){
+        custom_date_div.style.visibility = "visible";
+    }
+    else{
+        custom_date_div.style.visibility = "hidden";
+
+        let today = new Date()
+        end_time = today.getTime()
+
+        switch(event.target.value){
+            case "all-time": start_time = 0; break;
+            case "past-year": start_time = today.setFullYear(today.getFullYear() - 1); break;
+            case "past-month": start_time = today.setMonth(today.getMonth() - 1); break;
+            case "past-week": start_time = today.setDate(today.getDate() - 7); break;
+        }
+        updateTables(start_time, end_time)
+    }
+})
+
+document.getElementById("submit-btn").addEventListener('click', () =>{
+    start_time = document.getElementById("start-date").valueAsDate.getTime()
+    end_time = document.getElementById("end-date").valueAsDate.getTime()
+
+    updateTables(start_time, end_time)
+})
+
 function addCellToRow(row, cell_idx, text)
 {
     let cell = row.insertCell(cell_idx)
@@ -51,6 +82,14 @@ function resetHTMLTables()
     resetHTMLTable("expense-table");
 }
 
+function updateTables()
+{
+    resetHTMLTables();
+    getAllRows(start_time, end_time)
+    getCategoryTotals(start_time, end_time)
+    getNetIncome(start_time, end_time)
+}
+
 document.getElementById("expense-btn").addEventListener('click', () =>{
     ipcRenderer.send('add-entry-clicked', true)
 })
@@ -61,13 +100,15 @@ document.getElementById("income-btn").addEventListener('click', () =>{
 
 ipcRenderer.on('addEntry', (event, data) => {
     insertRow(data.date, data.amount, data.category, data.subcategory, data.note) 
-    getRows()
+    updateTables()
 })
 
 ipcRenderer.on('update-entries', (event, data) => {
     updateRow(data.id, data.date, data.amount, data.category, data.subcategory, data.note) 
+    updateTables()
 })
 
 ipcRenderer.on('deleteEntry', (event, id) => {
     deleteRow(id)
+    updateTables()
 })

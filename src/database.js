@@ -1,87 +1,70 @@
 const sqlite3 = require('sqlite3')
 
-createDB()
 var db;
+createDB()
+
 function createDB()
 {
     db = new sqlite3.Database('assets/db.sqlite', (err) => {
         err ? console.log(err) : createTable()
     })
 }
+
 function createTable()
 {
-    db.run(`CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT,
+    db.run(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, datetime INTEGER,
         amount REAL, category TEXT, subcategory TEXT, note TEXT)`, 
-        (err) => err ? console.log(err) : getRows())
+        (err) => { err ? console.log(err) : updateTables()})
 }
 
 function insertRow(date, amount, category, subcategory, note)
 {
-    db.run(`INSERT INTO test (date, amount, category, subcategory, note) VALUES('${date}', ${amount}, '${category}', '${subcategory}', '${note}')`, 
+    let datetime = Date.parse(date)
+    db.run(`INSERT INTO entries (date, datetime, amount, category, subcategory, note) VALUES('${date}', ${datetime}, ${amount}, '${category}', '${subcategory}', '${note}')`, 
     (err) =>{ if (err) console.log(err) })
 }
 
-function getRows()
+function getAllRows(start = 0, end = Number.MAX_SAFE_INTEGER)
 {
-    resetHTMLTables()
     let index = 1;
-    db.each("SELECT * FROM test", (err, row) =>{
-        addToHistoryTable(row, index)
-        ++index;
-    })
-
-    getCategoryTotals()
-    getNetIncome()
+    db.each(`SELECT date, amount, category, subcategory, note FROM entries WHERE datetime >= ${start} AND datetime <= ${end} ORDER BY datetime DESC`, 
+            (err, row) =>{ if (err){ console.log(err) } else{ addToHistoryTable(row, index); ++index; } })
 }
 
 function updateRow(id, date, amount, category, subcategory, note)
 {
-    db.run(`UPDATE test SET date='${date}', amount=${amount}, category='${category}', subcategory='${subcategory}', note='${note}' WHERE id=${id}`)
-    getRows()
+    let datetime = Date.parse(date)
+    db.run(`UPDATE entries SET date='${date}', datetime=${datetime}, amount=${amount}, category='${category}', subcategory='${subcategory}', note='${note}' WHERE id=${id}`,
+    (err) => { if (err) console.log(err); })
 }
 
 function deleteRow(id)
 {
-    db.run(`DELETE FROM test WHERE id=${id}`)
-    getRows()
+    db.run(`DELETE FROM entries WHERE id=${id}`, (err) => { if (err) console.log(err); })
 }
 
-function getCategoryTotals()
+function getCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER)
 {
     db.all(`SELECT category, SUM(amount) as total, SUM(amount) * 100 / t.s AS percentage
-            FROM test 
-            CROSS JOIN (SELECT SUM(amount) as s FROM test WHERE test.amount < 0) t 
-            WHERE test.amount < 0 
+            FROM entries 
+            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
+            WHERE entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}
             GROUP BY category`,
-    (err, rows) =>{
-        if (err){
-            console.log(err)
-        } else {
-            updateCategoryTotals(rows, true)
-        }
-    })
+            (err, rows) =>{ if (err){ console.log(err) } else { updateCategoryTotals(rows, true) } })
 
     db.all(`SELECT category, SUM(amount) as total, SUM(amount) * 100 / t.s AS percentage
-            FROM test 
-            CROSS JOIN (SELECT SUM(amount) as s FROM test WHERE test.amount > 0) t 
-            WHERE test.amount > 0 
+            FROM entries 
+            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
+            WHERE entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}
             GROUP BY category`,
-    (err, rows) =>{
-        if (err){
-            console.log(err)
-        } else {
-            updateCategoryTotals(rows, false)
-        }
-    })
+            (err, rows) =>{ if (err){ console.log(err) } else { updateCategoryTotals(rows, false) } })
 }
 
-function getNetIncome()
+function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER)
 {
     db.all(`SELECT SUM(amount) + t.s as total 
-            FROM test 
-            CROSS JOIN(SELECT SUM(amount) as s FROM test WHERE amount > 0) t
-            WHERE amount < 0`, 
-    (err, row) => {
-            document.getElementById('net-income').innerHTML = row[0].total 
-    })
+            FROM entries 
+            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
+            WHERE entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}`,
+            (err, row) => { document.getElementById('net-income').innerHTML = row[0].total })
 }
