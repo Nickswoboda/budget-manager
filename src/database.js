@@ -27,7 +27,7 @@ function insertRow(date, amount, category, subcategory, note)
 function getAllRows(start = 0, end = Number.MAX_SAFE_INTEGER)
 {
     let index = 1;
-    db.each(`SELECT date, amount, category, subcategory, note FROM entries WHERE datetime >= ${start} AND datetime <= ${end} ORDER BY datetime DESC`, 
+    db.each(`SELECT id, date, amount, category, subcategory, note FROM entries WHERE datetime >= ${start} AND datetime <= ${end} ORDER BY datetime DESC`, 
             (err, row) =>{ if (err){ console.log(err) } else{ addToHistoryTable(row, index); ++index; } })
 }
 
@@ -62,9 +62,19 @@ function getCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER)
 
 function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER)
 {
-    db.all(`SELECT SUM(amount) + t.s as total 
+    db.get(`SELECT SUM(amount) as expenses, t.income
             FROM entries 
-            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
+            CROSS JOIN (SELECT SUM(amount) as income FROM entries WHERE entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
             WHERE entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}`,
-            (err, row) => { document.getElementById('net-income').innerHTML = row[0].total })
+            (err, row) => { 
+                if (row.expenses === null) row.expenses = 0;
+                if (row.income === null) row.income = 0;
+                updateCategoryTotalSums(row.expenses, true);
+                updateCategoryTotalSums(row.income, false);
+
+                let total = row.expenses + row.income
+                net_income = document.getElementById('net-income')
+                net_income.innerHTML = total 
+                net_income.style.color = total > 0 ? "green" : total < 0 ? "red" : "black"; 
+            })
 }

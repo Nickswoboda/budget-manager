@@ -38,6 +38,15 @@ function addCellToRow(row, cell_idx, text)
     return cell
 }
 
+function updateCategoryTotalSums(total_sum, is_expense)
+{
+    let table = is_expense ? document.getElementById("expense-table") : document.getElementById("income-table")
+
+    var total_row = table.insertRow(table.rows.length)
+    addCellToRow(total_row, 0, "Total")
+    addCellToRow(total_row, 1, total_sum.toString())
+    addCellToRow(total_row, 2, `100`)
+}
 function updateCategoryTotals(entries, is_expense)
 {
     let table = is_expense ? document.getElementById("expense-table") : document.getElementById("income-table")
