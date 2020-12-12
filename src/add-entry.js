@@ -62,6 +62,8 @@ function loadCategories()
 function isValidInput()
 {
     let date = document.getElementById('date-input').valueAsDate
+    let todays_date = new Date()
+    if (date > todays_date) return false;
     if (date.getFullYear() < 1000 || date.getFullYear() > 3000) return false
     if (date.getMonth() < 0 || date.getMonth() > 12) return false
 
