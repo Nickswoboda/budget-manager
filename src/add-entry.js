@@ -118,8 +118,9 @@ ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{
     } else {
         let date = new Date(entry.date)
         document.getElementById('date-input').valueAsDate = date
-        document.getElementById('amount-input').value = Math.abs(entry.amount) 
+        document.getElementById('amount-input').value = Math.abs(entry.amount)/100 
         document.getElementById('category-input').value = entry.category
+        setSubcategories(entry.category)
         document.getElementById('subcat-input').value = entry.subcategory
         document.getElementById('note-input').value = entry.note
     }

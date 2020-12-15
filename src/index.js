@@ -44,8 +44,7 @@ function updateCategoryTotalSums(total_sum, is_expense)
 
     var total_row = table.insertRow(table.rows.length)
     addCellToRow(total_row, 0, "Total")
-    addCellToRow(total_row, 1, total_sum.toString())
-    addCellToRow(total_row, 2, `100`)
+    addCellToRow(total_row, 1, (total_sum / 100).toFixed(2))
 }
 function updateCategoryTotals(entries, is_expense)
 {
@@ -54,8 +53,8 @@ function updateCategoryTotals(entries, is_expense)
     for (let i = 0; i < entries.length; ++i){
         var new_row = table.insertRow(i+1)
         addCellToRow(new_row, 0, entries[i].category)
-        addCellToRow(new_row, 1, entries[i].total)
-        addCellToRow(new_row, 2, entries[i].percentage)
+        addCellToRow(new_row, 1, (entries[i].total / 100).toFixed(2))
+        addCellToRow(new_row, 2, entries[i].percentage.toFixed(2))
     }
 }
 
@@ -72,7 +71,7 @@ function addToHistoryTable(entry, index)
     })
 
     addCellToRow(row, 1, entry.date)
-    addCellToRow(row, 2, entry.amount)
+    addCellToRow(row, 2, (entry.amount / 100).toFixed(2))
     addCellToRow(row, 3, entry.subcategory === "" ? entry.category : entry.subcategory)
     addCellToRow(row, 4, entry.note)
 }

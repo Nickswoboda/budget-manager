@@ -12,7 +12,7 @@
         "Utilities" : ["Gas", "Water", "Electricity", "Internet", "Trash", "Cellphone"],
         "Shopping" : ["Clothes", "Hobby", "Household Item"],
         "Healthcare" : ["Gym Membership", "Doctor Visit", "Medication"],
-        "Debt" : ["Credit Card", "Student Loan"],
+        "Debt" : ["Credit Card", "Student Loan", "Car Payment"],
         "Savings" : ["Emergency Fund", "Retirement"],
         "Entertainment" : ["Games", "Movies", "Subscriptions"],
         "Travel" : ["Flight", "Rental Car", "Gas", "Hotel"],
