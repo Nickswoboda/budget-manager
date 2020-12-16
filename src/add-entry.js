@@ -61,18 +61,26 @@ function loadCategories()
 
 function isValidInput()
 {
+    let error_msg = '';
+
     let date = document.getElementById('date-input').valueAsDate
     let todays_date = new Date()
-    if (date > todays_date) return false;
-    if (date.getFullYear() < 1000 || date.getFullYear() > 3000) return false
-    if (date.getMonth() < 0 || date.getMonth() > 12) return false
+    if (date > todays_date) error_msg = "Date can not be in the future." 
 
     let days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    if (date.getDate() < 1 || date.getDate() > days_in_month[date.getMonth()]) return false
+    if (date.getFullYear() < 1000 || date.getFullYear() > 3000 ||  
+        date.getMonth() < 0 || date.getMonth() > 12 ||
+        date.getDate() < 1 || date.getDate() > days_in_month[date.getMonth()]){
+            error_msg = "Invalid Date."
+        } 
 
     let amount = document.getElementById('amount-input').valueAsNumber
-    if (isNaN(amount) || amount === 0) return false
+    if (isNaN(amount) || amount === 0) error_msg = "'Amount' is not a valid number" 
 
+    if (error_msg.length !== 0){
+        ipcRenderer.send('invalid-entry-input', error_msg)
+        return false;
+    }
     return true
 }
 document.getElementById('submit-btn').addEventListener('click', () =>{

@@ -88,3 +88,13 @@ ipcMain.on('delete-entry-requested', (event, entry_index ) =>{
     })
 
 })
+
+ipcMain.on('invalid-entry-input', (event, error) => {
+    const options = {
+        type: 'error',
+        title: 'Invalid Input',
+        message: error
+    }
+
+    dialog.showMessageBox(options);
+})
