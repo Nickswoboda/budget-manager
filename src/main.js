@@ -1,5 +1,5 @@
 const {app, BrowserWindow, ipcMain, dialog, Tray, Menu} = require('electron')
-const settings = require('./settings.js')
+const settings = require('./scripts/settings.js')
 
 settings.set_setting('launch-at-start', false)
 settings.apply_settings()
@@ -8,6 +8,30 @@ let entry_win = null
 let tray = null
 let quit = false;
 
+function sendToTray()
+{
+    main_win.hide()
+    tray = new Tray('assets/icon.png')
+    tray.on('right-click', () => {
+        tray.popUpContextMenu()
+        console.log("clicked")
+    })
+    tray.setContextMenu(Menu.buildFromTemplate([
+        {
+          label: 'Show App', click: () => {
+            main_win.show();
+            tray = null;
+          }
+        },
+        {
+          label: 'Quit', click: () => {
+            quit = true;
+            tray = null
+            app.quit();
+          }
+        }
+      ]));
+}
 function createMainWindow(){
     
     main_win = new BrowserWindow({
@@ -19,33 +43,15 @@ function createMainWindow(){
         }
     })
 
-    main_win.loadFile('src/index.html')
+    main_win.loadFile('src/views/index.html')
     main_win.on('close', (event) => { 
         if (!quit){
             event.preventDefault()
-            main_win.hide()
+            sendToTray()
             event.returnValue = false
+        } else{
         }
     })
-
-    tray = new Tray('assets/icon.png')
-    tray.on('right-click', () => {
-        tray.popUpContextMenu()
-        console.log("clicked")
-    })
-    tray.setContextMenu(Menu.buildFromTemplate([
-        {
-          label: 'Show App', click: () => {
-            main_win.show();
-          }
-        },
-        {
-          label: 'Quit', click: () => {
-            quit = true;
-            app.quit();
-          }
-        }
-      ]));
 }
 
 app.whenReady().then(createMainWindow)
