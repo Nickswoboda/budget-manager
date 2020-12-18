@@ -5,7 +5,8 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "rebuild": "electron-rebuild -f -w sqlite3"
+    "rebuild": "electron-rebuild -f -w sqlite3",
+    "make": "electron-packager . --overwrite"
   },
   "repository": {
     "type": "git",
@@ -20,9 +21,12 @@
   "homepage": "https://github.com/nickswoboda/budget-manager#readme",
   "devDependencies": {
     "electron": "^11.0.4",
+    "electron-packager": "^15.2.0",
     "electron-rebuild": "^2.3.4"
   },
   "dependencies": {
+    "auto-launch": "^5.0.5",
+    "electron-json-storage": "^4.3.0",
     "sqlite3": "^5.0.0"
   }
 }

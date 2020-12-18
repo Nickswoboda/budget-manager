@@ -1,2 +1,4 @@
 node_modules
 .vscode
+budget-manager-win32-x64/
+package-lock.json

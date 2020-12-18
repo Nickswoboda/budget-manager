@@ -1,9 +1,15 @@
-const {app, BrowserWindow, ipcMain, dialog} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, Tray, Menu} = require('electron')
+const settings = require('./settings.js')
 
+settings.set_setting('launch-at-start', false)
+settings.apply_settings()
 let main_win = null
 let entry_win = null
+let tray = null
+let quit = false;
 
 function createMainWindow(){
+    
     main_win = new BrowserWindow({
         width: 800,
         height: 600,
@@ -14,7 +20,32 @@ function createMainWindow(){
     })
 
     main_win.loadFile('src/index.html')
-    main_win.on('close', () => { app.quit()})
+    main_win.on('close', (event) => { 
+        if (!quit){
+            event.preventDefault()
+            main_win.hide()
+            event.returnValue = false
+        }
+    })
+
+    tray = new Tray('assets/icon.png')
+    tray.on('right-click', () => {
+        tray.popUpContextMenu()
+        console.log("clicked")
+    })
+    tray.setContextMenu(Menu.buildFromTemplate([
+        {
+          label: 'Show App', click: () => {
+            main_win.show();
+          }
+        },
+        {
+          label: 'Quit', click: () => {
+            quit = true;
+            app.quit();
+          }
+        }
+      ]));
 }
 
 app.whenReady().then(createMainWindow)
@@ -23,6 +54,10 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin'){
         app.quit()
     }
+})
+
+app.on('before-quit', () =>{
+    quit = true
 })
 
 app.on('activate', () => {
@@ -88,6 +123,7 @@ ipcMain.on('delete-entry-requested', (event, entry_index ) =>{
     })
 
 })
+
 
 ipcMain.on('invalid-entry-input', (event, error) => {
     const options = {
