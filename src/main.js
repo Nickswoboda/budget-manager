@@ -1,10 +1,11 @@
 const {app, BrowserWindow, ipcMain, dialog, Tray, Menu} = require('electron')
 const settings = require('./scripts/settings.js')
 
-settings.set_setting('launch-at-start', false)
-settings.apply_settings()
+settings.init()
+
 let main_win = null
 let entry_win = null
+let settings_win = null
 let tray = null
 let quit = false;
 
@@ -32,17 +33,24 @@ function sendToTray()
         }
       ]));
 }
-function createMainWindow(){
-    
-    main_win = new BrowserWindow({
-        width: 800,
-        height: 600,
+
+function createBrowser(width, height, has_frame, is_modal)
+{
+    return new BrowserWindow({
+        width: width,
+        height: height,
+        frame: has_frame,
+        modal: is_modal,
+        parent: is_modal ? main_win : null,
         webPreferences:{
             nodeIntegration: true,
             enableRemoteModule: true
         }
     })
-
+}
+function createMainWindow(){
+    
+    main_win = createBrowser(800, 600, true, false)
     main_win.loadFile('src/views/index.html')
     main_win.on('close', (event) => { 
         if (!quit){
@@ -52,6 +60,24 @@ function createMainWindow(){
         } else{
         }
     })
+
+    main_win.setMenu(Menu.buildFromTemplate([
+       {
+           label: "File",
+           submenu: [
+               {
+                   label: 'Settings', click() {
+                       createSettingsWindow()
+                   }
+               },
+               {
+                   label: 'Quit', click(){
+                       app.quit()
+                   }
+               }
+           ]
+       } 
+    ]))
 }
 
 app.whenReady().then(createMainWindow)
@@ -74,27 +100,31 @@ app.on('activate', () => {
 
 function createEntryWindow(is_expense, entry)
 {
-    entry_win = new BrowserWindow({
-        width: 300,
-        height: 500,
-        frame: false,
-        parent: main_win,
-        modal: true,
-        webPreferences:{
-            nodeIntegration: true,
-            enableRemoteModule: true
-        }
-    })
+    entry_win = createBrowser(300, 500, false, true)
     entry_win.on('close', () => {
         entry_win = null
     })
-    entry_win.loadFile('src/add-entry.html')
+    entry_win.loadFile('src/views/add-entry.html')
     entry_win.once('ready-to-show', () =>{
         entry_win.show()
         entry_win.webContents.send('initialize-popup', is_expense, entry)
     })
 
     //entry_win.webContents.openDevTools()
+}
+
+function createSettingsWindow()
+{
+    settings_win = createBrowser(300, 500, false, true)
+    settings_win.on('close', () => {
+        settings_win = null
+    })
+    settings_win.loadFile('src/views/settings.html')
+    settings_win.once('ready-to-show', () =>{
+        settings_win.show()
+        settings_win.webContents.send('initialize-settings')
+    })
+    //settings_win.webContents.openDevTools()
 }
 
 ipcMain.on('add-entry-clicked', (event, is_expense) => {
@@ -106,12 +136,7 @@ ipcMain.on('edit-entry-clicked', (event, entry) => {
 
 ipcMain.on('entry-submitted', (event, data) =>
 {
-    if (data.id === -1){
-        main_win.webContents.send('addEntry', data)
-    }
-    else{
-        main_win.webContents.send('update-entries', data)
-    }
+    main_win.webContents.send(data.id === -1 ? 'addEntry' : 'update-entries', data)
 })
 
 ipcMain.on('delete-entry-requested', (event, entry_index ) =>{
@@ -129,7 +154,6 @@ ipcMain.on('delete-entry-requested', (event, entry_index ) =>{
     })
 
 })
-
 
 ipcMain.on('invalid-entry-input', (event, error) => {
     const options = {

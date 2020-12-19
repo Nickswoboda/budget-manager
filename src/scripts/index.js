@@ -3,7 +3,6 @@ const { ipcRenderer} = require('electron')
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
 
-
 document.getElementById('start-date').valueAsDate = new Date()
 document.getElementById('end-date').valueAsDate = new Date()
 

@@ -1,7 +1,7 @@
 const storage = require('electron-json-storage')
 const AutoLaunch = require('auto-launch')
 
-function set_autolaunch(autolaunch)
+function setAutolaunch(autolaunch)
 {
     var auto_launcher = new AutoLaunch({
         name: 'Budget Manager',
@@ -17,25 +17,54 @@ function set_autolaunch(autolaunch)
         }
     })
 }
+function getSetting(setting, callback)
+{
+    storage.get(setting, (error, data) =>{
+        if (error){
+            console.log(error)
+        }
+       callback(data) 
+    })
+}
 
-function set_setting(setting, value){
+function setSetting(setting, value, callback){
     storage.set(setting, value, (error)=>{
         if (error){
             console.log(error)
         }
-    })
-}
-
-function apply_settings(){
-    storage.get('launch-at-start', (error, value) =>{
-        if (error){
-            console.log(error);
-        } else {
-            set_autolaunch(value)
-            console.log(value)
+        if (callback){
+            callback()
         }
     })
 }
 
-exports.set_setting = set_setting;
-exports.apply_settings = apply_settings;
+function applySettings(){
+    getSetting('launch-at-start', (value) =>{
+        setAutolaunch(value)
+    })
+}
+
+function init()
+{
+    storage.has('launch-at-start', (error, hasKey) => {
+        if (!hasKey){
+            setSetting('launch-at-start', false)
+        }
+    })
+    storage.has('enable-reminder', (error, hasKey) => {
+        if (!hasKey){
+            setSetting('enable-reminder', false)
+        }
+    })
+    storage.has('reminder-days', (error, hasKey) => {
+        if (!hasKey){
+            setSetting('reminder-days', 3)
+        }
+    })
+    applySettings()
+}
+
+exports.setSetting = setSetting;
+exports.getSetting = getSetting;
+exports.applySettings = applySettings;
+exports.init = init
