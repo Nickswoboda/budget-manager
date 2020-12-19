@@ -1,38 +1,11 @@
 const {app, BrowserWindow, ipcMain, dialog, Tray, Menu} = require('electron')
 const settings = require('./scripts/settings.js')
 
-settings.init()
-
 let main_win = null
 let entry_win = null
 let settings_win = null
-let tray = null
-let quit = false;
 
-function sendToTray()
-{
-    main_win.hide()
-    tray = new Tray('assets/icon.png')
-    tray.on('right-click', () => {
-        tray.popUpContextMenu()
-        console.log("clicked")
-    })
-    tray.setContextMenu(Menu.buildFromTemplate([
-        {
-          label: 'Show App', click: () => {
-            main_win.show();
-            tray = null;
-          }
-        },
-        {
-          label: 'Quit', click: () => {
-            quit = true;
-            tray = null
-            app.quit();
-          }
-        }
-      ]));
-}
+settings.init()
 
 function createBrowser(width, height, has_frame, is_modal)
 {
@@ -53,12 +26,8 @@ function createMainWindow(){
     main_win = createBrowser(800, 600, true, false)
     main_win.loadFile('src/views/index.html')
     main_win.on('close', (event) => { 
-        if (!quit){
-            event.preventDefault()
-            sendToTray()
-            event.returnValue = false
-        } else{
-        }
+        main_win = null
+        app.quit()
     })
 
     main_win.setMenu(Menu.buildFromTemplate([
@@ -86,10 +55,6 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin'){
         app.quit()
     }
-})
-
-app.on('before-quit', () =>{
-    quit = true
 })
 
 app.on('activate', () => {
