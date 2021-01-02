@@ -17,6 +17,7 @@ function setAutolaunch(autolaunch)
         }
     })
 }
+
 function getSetting(setting, callback)
 {
     storage.get(setting, (error, data) =>{

@@ -1,4 +1,4 @@
-const {app, BrowserWindow, ipcMain, dialog, Tray, Menu} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, Menu, Notification} = require('electron')
 const settings = require('./scripts/settings.js')
 
 let main_win = null
@@ -49,7 +49,21 @@ function createMainWindow(){
     ]))
 }
 
-app.whenReady().then(createMainWindow)
+app.whenReady().then(() => {
+    if (process.argv[1] === '--hidden'){
+        const opts =  {
+            title: 'It\'s been a while',
+            body: 'It\'s been x days since you have last updated your budget. Click to open up Budget Manager'
+        }
+        var notification = new Notification(opts)
+        notification.show()
+        notification.on('click', createMainWindow)
+        notification.on('close', () => {app.quit()})
+    }
+    else{
+        createMainWindow()
+    }
+})
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin'){
