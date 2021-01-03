@@ -2,9 +2,16 @@ const { ipcRenderer} = require('electron')
 
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
+let selected_user = -1
 
 document.getElementById('start-date').valueAsDate = new Date()
 document.getElementById('end-date').valueAsDate = new Date()
+
+
+document.getElementById("user-select").addEventListener('change', (event) =>{
+    selected_user = event.target.value
+    updateTables(start_time, end_time, selected_user)
+})
 
 let custom_date_div = document.getElementById("custom-date-search");
 document.getElementById("date-search-select").addEventListener('change', (event) =>{
@@ -23,7 +30,7 @@ document.getElementById("date-search-select").addEventListener('change', (event)
             case "past-month": start_time = today.setMonth(today.getMonth() - 1); break;
             case "past-week": start_time = today.setDate(today.getDate() - 7); break;
         }
-        updateTables(start_time, end_time)
+        updateTables(start_time, end_time, selected_user)
     }
 })
 
@@ -31,7 +38,7 @@ document.getElementById("submit-btn").addEventListener('click', () =>{
     start_time = document.getElementById("start-date").valueAsDate.getTime()
     end_time = document.getElementById("end-date").valueAsDate.getTime()
 
-    updateTables(start_time, end_time)
+    updateTables(start_time, end_time, selected_user)
 })
 
 function addCellToRow(row, cell_idx, text)
@@ -96,9 +103,9 @@ function resetHTMLTables()
 function updateTables()
 {
     resetHTMLTables();
-    getAllRows(start_time, end_time)
-    getCategoryTotals(start_time, end_time)
-    getNetIncome(start_time, end_time)
+    getAllRows(start_time, end_time, selected_user)
+    getCategoryTotals(start_time, end_time, selected_user)
+    getNetIncome(start_time, end_time, selected_user)
 }
 
 document.getElementById("expense-btn").addEventListener('click', () =>{

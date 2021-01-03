@@ -13,7 +13,7 @@ function createDB()
 
 function createTable()
 {
-    db.run(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, datetime INTEGER,
+    db.run(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, date TEXT, datetime INTEGER,
         amount INTEGER, category TEXT, subcategory TEXT, note TEXT)`, 
         (err) => { err ? console.log(err) : updateTables()})
 }
@@ -23,14 +23,14 @@ function insertRow(date, amount, category, subcategory, note)
     let datetime = Date.parse(date)
     //store as cents to help reduce float imprecision
     let cents = (amount * 100).toFixed(0) 
-    db.run(`INSERT INTO entries (date, datetime, amount, category, subcategory, note) VALUES('${date}', ${datetime}, ${cents}, '${category}', '${subcategory}', '${note}')`, 
+    db.run(`INSERT INTO entries (user_id, date, datetime, amount, category, subcategory, note) VALUES(${user_id}, '${date}', ${datetime}, ${cents}, '${category}', '${subcategory}', '${note}')`, 
     (err) =>{ if (err) console.log(err) })
 }
 
-function getAllRows(start = 0, end = Number.MAX_SAFE_INTEGER)
+function getAllRows(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1)
 {
     let index = 1;
-    db.each(`SELECT id, date, amount, category, subcategory, note FROM entries WHERE datetime >= ${start} AND datetime <= ${end} ORDER BY datetime DESC`, 
+    db.each(`SELECT id, date, amount, category, subcategory, note FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end} ORDER BY datetime DESC`, 
             (err, row) =>{ if (err){ console.log(err) } else{ addToHistoryTable(row, index); ++index; } })
 }
 

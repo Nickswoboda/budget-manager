@@ -17,6 +17,14 @@ document.getElementById('category-input').addEventListener('change', () =>{
     setSubcategories(category)
 })
 
+function setUsers()
+{
+    let select_box = document.getElementById('user-input')
+
+    for (let i = 0; i < 2; ++i){
+        select_box.options[i] = new Option(i, i)
+    }
+}
 function setSubcategories(category)
 {
     let subcat_box = document.getElementById('subcat-input')
@@ -29,6 +37,7 @@ function setSubcategories(category)
     for (let i = 0; i < subcategories.length; ++i){
         subcat_box.options[subcat_box.options.length] = new Option(subcategories[i], subcategories[i])
     }
+    setUsers()
 }
 
 function setCategories(is_expense){
@@ -94,7 +103,8 @@ document.getElementById('submit-btn').addEventListener('click', () =>{
         category : document.getElementById('category-input').value.toString(),
         subcategory : document.getElementById('subcat-input').value.toString(),
         id: entry_edited === null ? -1 : entry_edited.id,
-        note : document.getElementById('note-input').value.toString()
+        note : document.getElementById('note-input').value.toString(),
+        user_id : document.getElementById('user-input').value.toString() 
     }
 
     ipcRenderer.send('entry-submitted', data)
