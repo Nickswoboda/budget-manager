@@ -50,15 +50,31 @@ function createMainWindow(){
 }
 
 app.whenReady().then(() => {
+    //hidden arg will be present if started automatically at launch
     if (process.argv[1] === '--hidden'){
-        const opts =  {
-            title: 'It\'s been a while',
-            body: 'It\'s been x days since you have last updated your budget. Click to open up Budget Manager'
-        }
-        var notification = new Notification(opts)
-        notification.show()
-        notification.on('click', createMainWindow)
-        notification.on('close', () => {app.quit()})
+        settings.getSetting('last-entry-time', (time) => {
+            if (time){
+                let elapsed = Date.now() - time;
+                settings.getSetting('reminder-days', (days) => {
+                    let days_in_ms = days * 1000 * 60 * 60 * 24
+                    if (elapsed >= days_in_ms){
+                        console.log("time to notify")
+                        let opts =  {
+                            title: 'It\'s been a while',
+                            body: `It\'s been over ${days} days since you have last updated your budget. Click to open up Budget Manager`
+                        }
+                        var notification = new Notification(opts)
+                        notification.show()
+                        notification.on('click', createMainWindow)
+                        notification.on('close', () => {app.quit()})
+                    } else {
+                        app.quit()
+                    }
+                })
+            } else {
+                app.quit()
+            }
+        })
     }
     else{
         createMainWindow()
@@ -116,6 +132,7 @@ ipcMain.on('edit-entry-clicked', (event, entry) => {
 ipcMain.on('entry-submitted', (event, data) =>
 {
     main_win.webContents.send(data.id === -1 ? 'addEntry' : 'update-entries', data)
+    settings.setSetting('last-entry-time', Date.now())
 })
 
 ipcMain.on('delete-entry-requested', (event, entry_index ) =>{

@@ -52,11 +52,6 @@ function init()
             setSetting('launch-at-start', false)
         }
     })
-    storage.has('enable-reminder', (error, hasKey) => {
-        if (!hasKey){
-            setSetting('enable-reminder', false)
-        }
-    })
     storage.has('reminder-days', (error, hasKey) => {
         if (!hasKey){
             setSetting('reminder-days', 3)
