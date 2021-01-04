@@ -18,7 +18,7 @@ function createTable()
         (err) => { err ? console.log(err) : updateTables()})
 }
 
-function insertRow(date, amount, category, subcategory, note)
+function insertRow(user_id, date, amount, category, subcategory, note)
 {
     let datetime = Date.parse(date)
     //store as cents to help reduce float imprecision
@@ -30,16 +30,16 @@ function insertRow(date, amount, category, subcategory, note)
 function getAllRows(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1)
 {
     let index = 1;
-    db.each(`SELECT id, date, amount, category, subcategory, note FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end} ORDER BY datetime DESC`, 
+    db.each(`SELECT id, user_id, date, amount, category, subcategory, note FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end} ORDER BY datetime DESC`, 
             (err, row) =>{ if (err){ console.log(err) } else{ addToHistoryTable(row, index); ++index; } })
 }
 
-function updateRow(id, date, amount, category, subcategory, note)
+function updateRow(id, user_id, date, amount, category, subcategory, note)
 {
     let datetime = Date.parse(date)
     //store as cents to help reduce float imprecision
     let cents = (amount * 100).toFixed(0) 
-    db.run(`UPDATE entries SET date='${date}', datetime=${datetime}, amount=${cents}, category='${category}', subcategory='${subcategory}', note='${note}' WHERE id=${id}`,
+    db.run(`UPDATE entries SET user_id=${user_id}, date='${date}', datetime=${datetime}, amount=${cents}, category='${category}', subcategory='${subcategory}', note='${note}' WHERE id=${id}`,
     (err) => { if (err) console.log(err); })
 }
 
@@ -48,29 +48,29 @@ function deleteRow(id)
     db.run(`DELETE FROM entries WHERE id=${id}`, (err) => { if (err) console.log(err); })
 }
 
-function getCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER)
+function getCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1)
 {
     db.all(`SELECT category, SUM(amount) as total, ROUND(SUM(amount) * 100.0 / t.s, 2) AS percentage
             FROM entries 
-            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
-            WHERE entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}
+            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}
             GROUP BY category`,
             (err, rows) =>{ if (err){ console.log(err) } else { updateCategoryTotals(rows, true) } })
 
     db.all(`SELECT category, SUM(amount) as total, ROUND(SUM(amount) * 100.0 / t.s, 2) AS percentage
             FROM entries 
-            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
-            WHERE entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}
+            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}
             GROUP BY category`,
             (err, rows) =>{ if (err){ console.log(err) } else { updateCategoryTotals(rows, false) } })
 }
 
-function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER)
+function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1)
 {
     db.get(`SELECT SUM(amount) as expenses, t.income
             FROM entries 
-            CROSS JOIN (SELECT SUM(amount) as income FROM entries WHERE entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
-            WHERE entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}`,
+            CROSS JOIN (SELECT SUM(amount) as income FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}`,
             (err, row) => { 
                 if (row.expenses === null) row.expenses = 0;
                 if (row.income === null) row.income = 0;

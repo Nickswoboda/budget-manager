@@ -17,12 +17,12 @@ document.getElementById('category-input').addEventListener('change', () =>{
     setSubcategories(category)
 })
 
-function setUsers()
+function setUsers(users)
 {
     let select_box = document.getElementById('user-input')
 
-    for (let i = 0; i < 2; ++i){
-        select_box.options[i] = new Option(i, i)
+    for (let i = 0; i < users.length; ++i){
+        select_box.options[i] = new Option(users[i], i)
     }
 }
 function setSubcategories(category)
@@ -37,7 +37,6 @@ function setSubcategories(category)
     for (let i = 0; i < subcategories.length; ++i){
         subcat_box.options[subcat_box.options.length] = new Option(subcategories[i], subcategories[i])
     }
-    setUsers()
 }
 
 function setCategories(is_expense){
@@ -119,12 +118,13 @@ delete_btn = document.getElementById('delete-btn').addEventListener('click', () 
     ipcRenderer.send('delete-entry-requested', entry_edited.id);
 })
 
-ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{
+ipcRenderer.on('initialize-popup', (event, is_expense, entry, users) =>{
     entry_edited = entry
     expense = is_expense
 
     loadCategories()
     setCategories(is_expense)
+    setUsers(users)
 
     if (!is_expense){
         let subcat_input = document.getElementById('subcat-input')
@@ -135,6 +135,7 @@ ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{
         delete_btn.style.visibility = 'hidden'
     } else {
         let date = new Date(entry.date)
+        document.getElementById('user-input').value = entry.user_id 
         document.getElementById('date-input').valueAsDate = date
         document.getElementById('amount-input').value = Math.abs(entry.amount)/100 
         document.getElementById('category-input').value = entry.category

@@ -2,6 +2,7 @@ const { ipcRenderer} = require('electron')
 
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
+let users = []
 let selected_user = -1
 
 document.getElementById('start-date').valueAsDate = new Date()
@@ -79,11 +80,11 @@ function addToHistoryTable(entry, index)
     edit.addEventListener("click", () =>{
         ipcRenderer.send('edit-entry-clicked', entry)
     })
-
-    addCellToRow(row, 1, entry.date)
-    addCellToRow(row, 2, (entry.amount / 100).toFixed(2))
-    addCellToRow(row, 3, entry.subcategory === "" ? entry.category : entry.subcategory)
-    addCellToRow(row, 4, entry.note)
+    addCellToRow(row, 1, users[entry.user_id])
+    addCellToRow(row, 2, entry.date)
+    addCellToRow(row, 3, (entry.amount / 100).toFixed(2))
+    addCellToRow(row, 4, entry.subcategory === "" ? entry.category : entry.subcategory)
+    addCellToRow(row, 5, entry.note)
 }
 
 function resetHTMLTable(table_name){
@@ -117,16 +118,25 @@ document.getElementById("income-btn").addEventListener('click', () =>{
 })
 
 ipcRenderer.on('addEntry', (event, data) => {
-    insertRow(data.date, data.amount, data.category, data.subcategory, data.note) 
+    insertRow(data.user_id, data.date, data.amount, data.category, data.subcategory, data.note) 
     updateTables()
 })
 
 ipcRenderer.on('update-entries', (event, data) => {
-    updateRow(data.id, data.date, data.amount, data.category, data.subcategory, data.note) 
+    updateRow(data.id, data.user_id, data.date, data.amount, data.category, data.subcategory, data.note) 
     updateTables()
 })
 
 ipcRenderer.on('deleteEntry', (event, id) => {
     deleteRow(id)
     updateTables()
+})
+
+ipcRenderer.on('init-users', (event, all_users) => {
+    users = all_users
+    let user_select = document.getElementById('user-select')
+
+    for (let i = 0; i < users.length; ++i){
+        user_select.options[i+1] = new Option(users[i], i)
+    }
 })

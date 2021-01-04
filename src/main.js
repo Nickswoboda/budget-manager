@@ -40,6 +40,11 @@ function createMainWindow(){
                    }
                },
                {
+                   label: 'Edit Users', click() {
+                        createEditUserWindow()
+                   }
+               },
+               {
                    label: 'Quit', click(){
                        app.quit()
                    }
@@ -47,6 +52,14 @@ function createMainWindow(){
            ]
        } 
     ]))
+
+    main_win.on('ready-to-show', () => {
+        settings.getSetting('users', (users) => {
+            main_win.webContents.send('init-users', users)
+        })
+    })
+
+    main_win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
@@ -102,7 +115,9 @@ function createEntryWindow(is_expense, entry)
     entry_win.loadFile('src/views/add-entry.html')
     entry_win.once('ready-to-show', () =>{
         entry_win.show()
-        entry_win.webContents.send('initialize-popup', is_expense, entry)
+        settings.getSetting('users', (users) => {
+            entry_win.webContents.send('initialize-popup', is_expense, entry, users)
+        })
     })
 
     //entry_win.webContents.openDevTools()

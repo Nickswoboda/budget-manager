@@ -57,6 +57,11 @@ function init()
             setSetting('reminder-days', 3)
         }
     })
+    storage.has('users', (error, hasKey) => {
+        if (!hasKey){
+            setSetting('users', ["Nick", "Jennifer"])
+        }
+    })
     applySettings()
 }
 
