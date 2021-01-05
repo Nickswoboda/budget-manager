@@ -1,5 +1,4 @@
 const sqlite3 = require('sqlite3')
-const fs = require('fs')
 
 var db;
 createDB()
@@ -7,18 +6,22 @@ createDB()
 function createDB()
 {
     db = new sqlite3.Database('assets/db.sqlite', (err) => {
-        err ? console.log(err) : createTable()
+        err ? console.log(err) : createTables()
     })
 }
 
-function createTable()
+function createTables()
 {
     db.run(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, date TEXT, datetime INTEGER,
         amount INTEGER, category TEXT, subcategory TEXT, note TEXT)`, 
-        (err) => { err ? console.log(err) : updateTables()})
+        (err) => { if (err) console.log(err) })
+
+    db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`, (err) => {
+        if (err) { console.log(error)}
+    })
 }
 
-function insertRow(user_id, date, amount, category, subcategory, note)
+function insertEntry(user_id, date, amount, category, subcategory, note)
 {
     let datetime = Date.parse(date)
     //store as cents to help reduce float imprecision
@@ -27,14 +30,18 @@ function insertRow(user_id, date, amount, category, subcategory, note)
     (err) =>{ if (err) console.log(err) })
 }
 
-function getAllRows(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1)
+function getAllEntries(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
     let index = 1;
-    db.each(`SELECT id, user_id, date, amount, category, subcategory, note FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end} ORDER BY datetime DESC`, 
-            (err, row) =>{ if (err){ console.log(err) } else{ addToHistoryTable(row, index); ++index; } })
+    db.all(`SELECT entries.id, name, date, amount, category, subcategory, note FROM entries 
+            JOIN users
+            ON users.id = entries.user_id
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end} 
+            ORDER BY datetime DESC`, 
+            (err, rows) =>{ if (err){ console.log(err) } else{ callback(rows) } })
 }
 
-function updateRow(id, user_id, date, amount, category, subcategory, note)
+function updateEntry(id, user_id, date, amount, category, subcategory, note)
 {
     let datetime = Date.parse(date)
     //store as cents to help reduce float imprecision
@@ -43,45 +50,57 @@ function updateRow(id, user_id, date, amount, category, subcategory, note)
     (err) => { if (err) console.log(err); })
 }
 
-function deleteRow(id)
+function deleteEntry(id)
 {
     db.run(`DELETE FROM entries WHERE id=${id}`, (err) => { if (err) console.log(err); })
 }
 
-function getCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1)
+function insertUser(name)
+{
+    db.run(`INSERT INTO users (name) VALUES('${name}')`, 
+    (err) =>{ if (err) console.log(err) })
+}
+function updateUser(id, name)
+{
+    db.run(`UPDATE users SET name=${name}`, (err) => { if (err) console.log(err); })
+}
+
+function deleteUser(id)
+{
+    db.run(`DELETE FROM users WHERE id=${id}`, (err) => { if (err) console.log(err); })
+}
+
+function getAllUsers(callback)
+{
+    db.all(`SELECT id, name FROM users`, (err, rows) =>{
+        callback(rows)
+    })
+}
+
+function getCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
     db.all(`SELECT category, SUM(amount) as total, ROUND(SUM(amount) * 100.0 / t.s, 2) AS percentage
             FROM entries 
             CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}
             GROUP BY category`,
-            (err, rows) =>{ if (err){ console.log(err) } else { updateCategoryTotals(rows, true) } })
+            (err, rows) =>{ if (err){ console.log(err) } else { callback(rows, true) } }) //true = expense, false = income
 
     db.all(`SELECT category, SUM(amount) as total, ROUND(SUM(amount) * 100.0 / t.s, 2) AS percentage
             FROM entries 
             CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}
             GROUP BY category`,
-            (err, rows) =>{ if (err){ console.log(err) } else { updateCategoryTotals(rows, false) } })
+            (err, rows) =>{ if (err){ console.log(err) } else { callback(rows, false) } })
 }
 
-function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1)
+function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
     db.get(`SELECT SUM(amount) as expenses, t.income
             FROM entries 
             CROSS JOIN (SELECT SUM(amount) as income FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}`,
-            (err, row) => { 
-                if (row.expenses === null) row.expenses = 0;
-                if (row.income === null) row.income = 0;
-                updateCategoryTotalSums(row.expenses, true);
-                updateCategoryTotalSums(row.income, false);
-
-                let total = (row.expenses + row.income) / 100
-                net_income = document.getElementById('net-income')
-                net_income.innerHTML = total 
-                net_income.style.color = total > 0 ? "green" : total < 0 ? "red" : "black"; 
-            })
+            (err, row) => {  callback(row) })
 }
 
 /*function saveToCsv(rows){
