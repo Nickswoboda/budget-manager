@@ -55,6 +55,11 @@ function deleteEntry(id)
     db.run(`DELETE FROM entries WHERE id=${id}`, (err) => { if (err) console.log(err); })
 }
 
+function deleteEntriesByUser(user_id)
+{
+    db.run(`DELETE FROM entries WHERE user_id=${user_id}`, (err) => { if (err) console.log(err); })
+}
+
 function insertUser(name)
 {
     db.run(`INSERT INTO users (name) VALUES('${name}')`, 
@@ -67,13 +72,20 @@ function updateUser(id, name)
 
 function deleteUser(id)
 {
-    db.run(`DELETE FROM users WHERE id=${id}`, (err) => { if (err) console.log(err); })
+    db.run(`DELETE FROM users WHERE id=${id}`, (err) => { 
+        if (err) {
+            console.log(err) 
+        } else {
+            deleteEntriesByUser(id)
+        }
+    })
+
 }
 
 function getAllUsers(callback)
 {
     db.all(`SELECT id, name FROM users`, (err, rows) =>{
-        callback(rows)
+        if (rows) callback(rows)
     })
 }
 
@@ -100,7 +112,7 @@ function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, ca
             FROM entries 
             CROSS JOIN (SELECT SUM(amount) as income FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}`,
-            (err, row) => {  callback(row) })
+            (err, row) => {  if (row)callback(row) })
 }
 
 /*function saveToCsv(rows){

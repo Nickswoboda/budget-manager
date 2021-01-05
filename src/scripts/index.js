@@ -2,12 +2,13 @@ const { ipcRenderer} = require('electron')
 
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
-let users = []
 let selected_user = -1
+
+updateTables()
+getAllUsers(updateUserSelection)
 
 document.getElementById('start-date').valueAsDate = new Date()
 document.getElementById('end-date').valueAsDate = new Date()
-
 
 document.getElementById("user-select").addEventListener('change', (event) =>{
     selected_user = event.target.value
@@ -49,6 +50,18 @@ function addCellToRow(row, cell_idx, text)
     return cell
 }
 
+function updateNetIncome(row)
+{
+    if (row.expenses === null) row.expenses = 0;
+    if (row.income === null) row.income = 0;
+    updateCategoryTotalSums(row.expenses, true);
+    updateCategoryTotalSums(row.income, false);
+
+    let total = (row.expenses + row.income) / 100
+    net_income = document.getElementById('net-income')
+    net_income.innerHTML = total 
+    net_income.style.color = total > 0 ? "green" : total < 0 ? "red" : "black"; 
+}
 function updateCategoryTotalSums(total_sum, is_expense)
 {
     let table = is_expense ? document.getElementById("expense-table") : document.getElementById("income-table")
@@ -69,22 +82,24 @@ function updateCategoryTotals(entries, is_expense)
     }
 }
 
-function addToHistoryTable(entry, index)
+function addEntriesToTable(entries)
 {
     let table = document.getElementById("history-table")
     
-    let row = table.insertRow(index)
-    row.style.backgroundColor = entry.amount < 0 ? "red" : "green"
+    for (let i = 0; i < entries.length; ++i){
+        let row = table.insertRow(i+1)
+        row.style.backgroundColor = entries[i].amount < 0 ? "red" : "green"
 
-    let edit = addCellToRow(row, 0, "Edit") 
-    edit.addEventListener("click", () =>{
-        ipcRenderer.send('edit-entry-clicked', entry)
-    })
-    addCellToRow(row, 1, users[entry.user_id])
-    addCellToRow(row, 2, entry.date)
-    addCellToRow(row, 3, (entry.amount / 100).toFixed(2))
-    addCellToRow(row, 4, entry.subcategory === "" ? entry.category : entry.subcategory)
-    addCellToRow(row, 5, entry.note)
+        let edit = addCellToRow(row, 0, "Edit") 
+        edit.addEventListener("click", () =>{
+            ipcRenderer.send('edit-entry-clicked', entries[i])
+        })
+        addCellToRow(row, 1, entries[i].name)
+        addCellToRow(row, 2, entries[i].date)
+        addCellToRow(row, 3, (entries[i].amount / 100).toFixed(2))
+        addCellToRow(row, 4, entries[i].subcategory === "" ? entries[i].category : entries[i].subcategory)
+        addCellToRow(row, 5, entries[i].note)
+    }
 }
 
 function resetHTMLTable(table_name){
@@ -104,9 +119,21 @@ function resetHTMLTables()
 function updateTables()
 {
     resetHTMLTables();
-    getAllRows(start_time, end_time, selected_user)
-    getCategoryTotals(start_time, end_time, selected_user)
-    getNetIncome(start_time, end_time, selected_user)
+    getAllEntries(start_time, end_time, selected_user, addEntriesToTable)
+    getCategoryTotals(start_time, end_time, selected_user, updateCategoryTotals)
+    getNetIncome(start_time, end_time, selected_user, updateNetIncome)
+}
+
+function updateUserSelection(users)
+{
+    let user_select = document.getElementById('user-select')
+    while (user_select.length > 1){
+        user_select.remove(1)
+    }
+    for (let i = 0; i < users.length; ++i){
+        user_select.options[i+1] = new Option(users[i].name, users[i].id)
+    }
+
 }
 
 document.getElementById("expense-btn").addEventListener('click', () =>{
@@ -118,25 +145,21 @@ document.getElementById("income-btn").addEventListener('click', () =>{
 })
 
 ipcRenderer.on('addEntry', (event, data) => {
-    insertRow(data.user_id, data.date, data.amount, data.category, data.subcategory, data.note) 
+    insertEntry(data.user_id, data.date, data.amount, data.category, data.subcategory, data.note) 
     updateTables()
 })
 
 ipcRenderer.on('update-entries', (event, data) => {
-    updateRow(data.id, data.user_id, data.date, data.amount, data.category, data.subcategory, data.note) 
+    updateEntry(data.id, data.user_id, data.date, data.amount, data.category, data.subcategory, data.note) 
     updateTables()
 })
 
 ipcRenderer.on('deleteEntry', (event, id) => {
-    deleteRow(id)
+    deleteEntry(id)
     updateTables()
 })
 
-ipcRenderer.on('init-users', (event, all_users) => {
-    users = all_users
-    let user_select = document.getElementById('user-select')
-
-    for (let i = 0; i < users.length; ++i){
-        user_select.options[i+1] = new Option(users[i], i)
-    }
+ipcRenderer.on('users-updated', (event) => {
+    updateTables()
+    getAllUsers(updateUserSelection)
 })

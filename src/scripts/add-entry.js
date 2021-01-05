@@ -1,4 +1,5 @@
 const {ipcRenderer, remote} = require('electron')
+const { getAll } = require('electron-json-storage')
 const fs = require('fs')
 
 var expense = true
@@ -22,7 +23,11 @@ function setUsers(users)
     let select_box = document.getElementById('user-input')
 
     for (let i = 0; i < users.length; ++i){
-        select_box.options[i] = new Option(users[i], i)
+        select_box.options[i] = new Option(users[i].name, users[i].id.toString())
+        if (entry_edited && entry_edited.name === users[i].name){
+            select_box.value = users[i].id.toString()
+        }
+
     }
 }
 function setSubcategories(category)
@@ -118,13 +123,13 @@ delete_btn = document.getElementById('delete-btn').addEventListener('click', () 
     ipcRenderer.send('delete-entry-requested', entry_edited.id);
 })
 
-ipcRenderer.on('initialize-popup', (event, is_expense, entry, users) =>{
+ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{
     entry_edited = entry
     expense = is_expense
 
     loadCategories()
     setCategories(is_expense)
-    setUsers(users)
+    getAllUsers(setUsers)
 
     if (!is_expense){
         let subcat_input = document.getElementById('subcat-input')
@@ -135,11 +140,10 @@ ipcRenderer.on('initialize-popup', (event, is_expense, entry, users) =>{
         delete_btn.style.visibility = 'hidden'
     } else {
         let date = new Date(entry.date)
-        document.getElementById('user-input').value = entry.user_id 
         document.getElementById('date-input').valueAsDate = date
         document.getElementById('amount-input').value = Math.abs(entry.amount)/100 
         document.getElementById('category-input').value = entry.category
-        setSubcategories(entry.category)
+        if (expense) setSubcategories(entry.category)
         document.getElementById('subcat-input').value = entry.subcategory
         document.getElementById('note-input').value = entry.note
     }

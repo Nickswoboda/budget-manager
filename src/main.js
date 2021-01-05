@@ -4,6 +4,7 @@ const settings = require('./scripts/settings.js')
 let main_win = null
 let entry_win = null
 let settings_win = null
+let user_win = null
 
 settings.init()
 
@@ -21,9 +22,10 @@ function createBrowser(width, height, has_frame, is_modal)
         }
     })
 }
+
 function createMainWindow(){
     
-    main_win = createBrowser(800, 600, true, false)
+    main_win = createBrowser(1080, 720, true, false)
     main_win.loadFile('src/views/index.html')
     main_win.on('close', (event) => { 
         main_win = null
@@ -53,13 +55,7 @@ function createMainWindow(){
        } 
     ]))
 
-    main_win.on('ready-to-show', () => {
-        settings.getSetting('users', (users) => {
-            main_win.webContents.send('init-users', users)
-        })
-    })
-
-    main_win.webContents.openDevTools()
+    //main_win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
@@ -115,9 +111,7 @@ function createEntryWindow(is_expense, entry)
     entry_win.loadFile('src/views/add-entry.html')
     entry_win.once('ready-to-show', () =>{
         entry_win.show()
-        settings.getSetting('users', (users) => {
-            entry_win.webContents.send('initialize-popup', is_expense, entry, users)
-        })
+        entry_win.webContents.send('initialize-popup', is_expense, entry)
     })
 
     //entry_win.webContents.openDevTools()
@@ -135,6 +129,21 @@ function createSettingsWindow()
         settings_win.webContents.send('initialize-settings')
     })
     //settings_win.webContents.openDevTools()
+}
+function createEditUserWindow()
+{
+    user_win = createBrowser(300, 500, false, true)
+    user_win.on('close', () => {
+        user_win = null
+    })
+    user_win.loadFile('src/views/users.html')
+    user_win.once('ready-to-show', () =>{
+        user_win.show()
+        settings.getSetting('users', (users) => {
+            user_win.webContents.send('initialize-users', users)
+        })
+    })
+    //user_win.webContents.openDevTools()
 }
 
 ipcMain.on('add-entry-clicked', (event, is_expense) => {
@@ -174,4 +183,22 @@ ipcMain.on('invalid-entry-input', (event, error) => {
     }
 
     dialog.showMessageBox(options);
+})
+
+ipcMain.on('delete-user-requested', (event, user ) =>{
+    const options = {
+        type: 'info',
+        title: 'Confirmation',
+        message: `Are you sure you want to delete ${user.name}? All entries associated with the user will be deleted.`,
+        buttons: ['Yes', 'No']
+    }
+    dialog.showMessageBox(options).then(result => {
+        if (result.response === 0){
+            user_win.webContents.send('delete-user', user.id)
+        }
+    })
+})
+
+ipcMain.on('users-updated', (event) =>{
+    main_win.webContents.send('users-updated')
 })
