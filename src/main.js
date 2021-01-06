@@ -55,7 +55,7 @@ function createMainWindow(){
        } 
     ]))
 
-    //main_win.webContents.openDevTools()
+    main_win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {

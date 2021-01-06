@@ -45,23 +45,13 @@
             </thead>
         </table>
     </div>
-    <div>
-        <h1>Totals</h1>
-        <table id="expense-table">
-            <tr>
-                <th>Category</th>
-                <th>Total</th>
-                <th>Percentage</th>
-            </tr>
-        </table>
-        <table id="income-table">
-            <tr>
-                <th>Category</th>
-                <th>Total</th>
-                <th>Percentage</th>
-            </tr>
-        </table>
+    <div class="chart-div">
+        <canvas id="expense-chart"></canvas>
     </div>
+    <div class="chart-div">
+        <canvas id="income-chart"></canvas>
+    </div>
+    <br>
     <h1>Net Income:</h1>
     <h2 id="net-income"></h2>
     <script src="../scripts/database.js"></script>

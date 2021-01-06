@@ -1,4 +1,5 @@
 const { ipcRenderer} = require('electron')
+const Chart = require('chart.js')
 
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
@@ -54,32 +55,47 @@ function updateNetIncome(row)
 {
     if (row.expenses === null) row.expenses = 0;
     if (row.income === null) row.income = 0;
-    updateCategoryTotalSums(row.expenses, true);
-    updateCategoryTotalSums(row.income, false);
 
     let total = (row.expenses + row.income) / 100
     net_income = document.getElementById('net-income')
     net_income.innerHTML = total 
     net_income.style.color = total > 0 ? "green" : total < 0 ? "red" : "black"; 
 }
-function updateCategoryTotalSums(total_sum, is_expense)
-{
-    let table = is_expense ? document.getElementById("expense-table") : document.getElementById("income-table")
-
-    var total_row = table.insertRow(table.rows.length)
-    addCellToRow(total_row, 0, "Total")
-    addCellToRow(total_row, 1, (total_sum / 100).toFixed(2))
-}
 function updateCategoryTotals(entries, is_expense)
 {
-    let table = is_expense ? document.getElementById("expense-table") : document.getElementById("income-table")
+    let category_labels =[]
+    let values =[]
 
     for (let i = 0; i < entries.length; ++i){
-        var new_row = table.insertRow(i+1)
-        addCellToRow(new_row, 0, entries[i].category)
-        addCellToRow(new_row, 1, (entries[i].total / 100).toFixed(2))
-        addCellToRow(new_row, 2, entries[i].percentage.toFixed(2))
+        category_labels.push(entries[i].category)
+        values.push((entries[i].total / 100).toFixed(2))
     }
+    var ctx = document.getElementById(is_expense ? 'expense-chart' : 'income-chart').getContext('2d');
+    let chart = new Chart(ctx, {
+        // The type of chart we want to create
+        type: 'pie',
+    
+        // The data for our dataset
+        data: {
+            labels: category_labels,
+            datasets: [{
+                label: is_expense ? 'Expenses' : 'Income',
+                data: values,
+                backgroundColor: ['rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 206, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)',
+                'rgb(255, 159, 64)']
+            }]
+        },
+    
+        // Configuration options go here
+        options: {
+            responsive: true
+        }
+    });
+
 }
 
 function addEntriesToTable(entries)
@@ -112,8 +128,6 @@ function resetHTMLTable(table_name){
 function resetHTMLTables()
 {
     resetHTMLTable("history-table");
-    resetHTMLTable("income-table");
-    resetHTMLTable("expense-table");
 }
 
 function updateTables()
