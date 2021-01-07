@@ -80,11 +80,17 @@ function initLineChart()
         type: 'line',
         data: {
             datasets: [{
+                fill: false,
                 datalabels: {
-                    align: 'end',
-                    color: '#FFFFFF',
+                    align: 'top',
+                    color: function(context) {
+                        let index = context.dataIndex
+                        let value = context.dataset.data[index]
+                        return value < 0 ? 'red' : value > 0 ? 'green' : 'black'
+                    }
                 },
-                backgroundColor: '#FFFFFF'
+                backgroundColor: 'black',
+                borderColor: 'gray'
             }]
         },
         options: {
@@ -94,8 +100,26 @@ function initLineChart()
                 display : true,
                 fontSize: 16
             },
-            legend: {
-                display: false
+            legend: { display: false },
+            layout: { padding: { right : 20 }, },
+            scales: {
+                xAxes : [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    },
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return ''
+                        }
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Net Income ($)'
+                    }
+                }]
             }
         }
     });

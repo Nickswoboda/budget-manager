@@ -64,13 +64,13 @@ function updateNetIncome()
         for (let i = 0; i < entries.length; ++i){
             labels.push(entries[i].date)
             sum += parseFloat((entries[i].amount / 100).toFixed(2))
-            values.push(sum)
+            values.push(sum.toFixed(2))
         }
         updateLineChart(net_income_chart, labels, values)
 
         net_income = document.getElementById('net-income')
-        net_income.innerHTML = sum 
-        net_income.style.color = sum > 0 ? "green" : total < 0 ? "red" : "black"; 
+        net_income.innerHTML = sum.toFixed(2)
+        net_income.style.color = sum > 0 ? "green" : sum < 0 ? "red" : "black"; 
     })
 }
 function updateCategoryTotals(entries, is_expense)
