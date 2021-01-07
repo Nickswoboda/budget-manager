@@ -6,6 +6,9 @@ let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
 let selected_user = -1
 
+let expense_chart = null
+let income_chart = null
+
 updateTables()
 getAllUsers(updateUserSelection)
 
@@ -73,7 +76,8 @@ function updateCategoryTotals(entries, is_expense)
     }
     var canvas = document.getElementById(is_expense ? 'expense-canvas' : 'income-canvas')
     let ctx = canvas.getContext('2d');
-    let chart = new Chart(ctx, {
+    let chart = is_expense ? expense_chart : income_chart
+    chart = new Chart(ctx, {
         // The type of chart we want to create
         type: 'pie',
     
@@ -85,7 +89,12 @@ function updateCategoryTotals(entries, is_expense)
                     align: 'end',
                     color: '#FFFFFF',
                     formatter: (value, context) => {
-                        return "" + entries[context.dataIndex].percentage + "%" 
+                        let sum = 0;
+                        let data_values = context.chart.data.datasets[0].data
+                        for (let i = 0; i < data_values.length; ++i){
+                            sum += parseFloat(data_values[i]);
+                        }
+                        return (value*100 / sum).toFixed(2)+"%";
                     }
                 },
                 
@@ -115,7 +124,11 @@ function updateCategoryTotals(entries, is_expense)
                 fontSize: 16
             },
             legend: {
-                position: is_expense ? 'left' : 'right'
+                position: is_expense ? 'left' : 'right',
+                onClick: (event) => {
+                    event.stopPropagation()
+                }
+
             }
         }
     });
@@ -125,6 +138,9 @@ function updateCategoryTotals(entries, is_expense)
         if (element.length > 0){
             var slice_index = element[0]["_index"];
             var category = chart.data.labels[slice_index]
+            
+            //chart.data.labels = ["20", "30"]
+            //chart.data.datasets[0].data = [20, 30]
         }
     })
 }
