@@ -7,6 +7,7 @@ var win = remote.getCurrentWindow()
 
 income_categories = []
 expense_categories = {}
+initDB()
 
 //set date as todays date by default
 document.getElementById('date-input').valueAsDate = new Date()
@@ -17,17 +18,19 @@ document.getElementById('category-input').addEventListener('change', () =>{
     setSubcategories(category)
 })
 
-function setUsers(users)
+function setUsers()
 {
     let select_box = document.getElementById('user-input')
 
-    for (let i = 0; i < users.length; ++i){
-        select_box.options[i] = new Option(users[i].name, users[i].id.toString())
-        if (entry_edited && entry_edited.name === users[i].name){
-            select_box.value = users[i].id.toString()
-        }
+    getAllUsers((users) => {
+        for (let i = 0; i < users.length; ++i){
+            select_box.options[i] = new Option(users[i].name, users[i].id.toString())
+            if (entry_edited && entry_edited.name === users[i].name){
+                select_box.value = users[i].id.toString()
+            }
 
-    }
+        }
+    })
 }
 function setSubcategories(category)
 {
@@ -128,7 +131,7 @@ ipcRenderer.on('initialize-popup', (event, is_expense, entry) =>{
 
     loadCategories()
     setCategories(is_expense)
-    getAllUsers(setUsers)
+    setUsers()
 
     if (!is_expense){
         let subcat_input = document.getElementById('subcat-input')

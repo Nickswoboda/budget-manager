@@ -4,10 +4,11 @@ let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
 let selected_user = -1
 
-var expense_chart = initChart(true) 
-var income_chart = initChart(false)
+let expense_chart = initPieChart(true) 
+let income_chart = initPieChart(false)
+let net_income_chart = initLineChart() 
 
-updateTables()
+initDB(updateTables)
 updateUserSelection()
 
 document.getElementById('start-date').valueAsDate = new Date()
@@ -55,30 +56,36 @@ function addCellToRow(row, cell_idx, text)
 
 function updateNetIncome()
 {
-    getNetIncome(start_time, end_time, selected_user, (row) => {
-        if (row.expenses === null) row.expenses = 0;
-        if (row.income === null) row.income = 0;
+    getNetIncomeByDate(start_time, end_time, selected_user, (entries) =>
+    {
+        let labels = []
+        let values = []
+        let sum = 0
+        for (let i = 0; i < entries.length; ++i){
+            labels.push(entries[i].date)
+            sum += parseFloat((entries[i].amount / 100).toFixed(2))
+            values.push(sum)
+        }
+        updateLineChart(net_income_chart, labels, values)
 
-        let total = (row.expenses + row.income) / 100
         net_income = document.getElementById('net-income')
-        net_income.innerHTML = total 
-        net_income.style.color = total > 0 ? "green" : total < 0 ? "red" : "black"; 
+        net_income.innerHTML = sum 
+        net_income.style.color = sum > 0 ? "green" : total < 0 ? "red" : "black"; 
     })
 }
 function updateCategoryTotals(entries, is_expense)
 {
-    let category_labels =[]
-    let values =[]
-
     getCategoryTotals(start_time, end_time, selected_user, (entries, is_expense) =>{
+        let category_labels =[]
+        let values =[]
         for (let i = 0; i < entries.length; ++i){
             category_labels.push(entries[i].category)
             values.push((entries[i].total / 100).toFixed(2))
         }
         if (is_expense){
-            updateChart(expense_chart, 'Expenses', category_labels, values)
+            updatePieChart(expense_chart, 'Expenses', category_labels, values)
         } else {
-            updateChart(income_chart, 'Income', category_labels, values)
+            updatePieChart(income_chart, 'Income', category_labels, values)
         }
     })
 }
@@ -105,21 +112,17 @@ function addEntriesToTable()
     })
 }
 
-function resetHTMLTable(table_name){
-    let table = document.getElementById(table_name)
+function resetHTMLTable(){
+    let table = document.getElementById('history-table')
     let num_rows = table.rows.length
     for ( i = 1; i < num_rows; ++i){
         table.deleteRow(1)
     }
 }
-function resetHTMLTables()
-{
-    resetHTMLTable("history-table");
-}
 
 function updateTables()
 {
-    resetHTMLTables();
+    resetHTMLTable();
     addEntriesToTable()
     updateCategoryTotals()
     updateNetIncome()

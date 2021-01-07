@@ -1,20 +1,25 @@
 const sqlite3 = require('sqlite3')
 
-var db;
-createDB()
+var db = null;
 
-function createDB()
+function initDB(callback)
 {
     db = new sqlite3.Database('assets/db.sqlite', (err) => {
-        err ? console.log(err) : createTables()
+        err ? console.log(err) : createTables(callback)
     })
 }
 
-function createTables()
+function createTables(callback)
 {
     db.run(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, date TEXT, datetime INTEGER,
         amount INTEGER, category TEXT, subcategory TEXT, note TEXT)`, 
-        (err) => { if (err) console.log(err) })
+        (err) => { 
+            if (err) {
+                console.log(err)
+            } else if (callback) {
+                callback()
+            }
+         })
 
     db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`, (err) => {
         if (err) { console.log(error)}
@@ -32,7 +37,6 @@ function insertEntry(user_id, date, amount, category, subcategory, note)
 
 function getAllEntries(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
-    let index = 1;
     db.all(`SELECT entries.id, name, date, amount, category, subcategory, note FROM entries 
             JOIN users
             ON users.id = entries.user_id
@@ -115,13 +119,13 @@ function getSubcategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id 
             (err, rows) =>{ if (err){ console.log(err) } else { callback(rows, true) } }) //true = expense, false = income
 }
 
-function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
+function getNetIncomeByDate(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
-    db.get(`SELECT SUM(amount) as expenses, t.income
+    db.all(`SELECT date, SUM(amount) as amount
             FROM entries 
-            CROSS JOIN (SELECT SUM(amount) as income FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
-            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}`,
-            (err, row) => {  if (row)callback(row) })
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end}
+            GROUP BY date`,
+            (err, rows) => {  if (rows) callback(rows) })
 }
 
 /*function saveToCsv(rows){

@@ -25,7 +25,7 @@ function createBrowser(width, height, has_frame, is_modal)
 
 function createMainWindow(){
     
-    main_win = createBrowser(1080, 720, true, false)
+    main_win = createBrowser(1600, 900, true, false)
     main_win.loadFile('src/views/index.html')
     main_win.on('close', (event) => { 
         main_win = null
@@ -143,7 +143,7 @@ function createEditUserWindow()
             user_win.webContents.send('initialize-users', users)
         })
     })
-    //user_win.webContents.openDevTools()
+    user_win.webContents.openDevTools()
 }
 
 ipcMain.on('add-entry-clicked', (event, is_expense) => {
