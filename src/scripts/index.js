@@ -1,5 +1,6 @@
 const { ipcRenderer} = require('electron')
 const Chart = require('chart.js')
+const ChartDataLabels = require('chartjs-plugin-datalabels')
 
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
@@ -70,7 +71,8 @@ function updateCategoryTotals(entries, is_expense)
         category_labels.push(entries[i].category)
         values.push((entries[i].total / 100).toFixed(2))
     }
-    var ctx = document.getElementById(is_expense ? 'expense-chart' : 'income-chart').getContext('2d');
+    var canvas = document.getElementById(is_expense ? 'expense-canvas' : 'income-canvas')
+    let ctx = canvas.getContext('2d');
     let chart = new Chart(ctx, {
         // The type of chart we want to create
         type: 'pie',
@@ -79,23 +81,52 @@ function updateCategoryTotals(entries, is_expense)
         data: {
             labels: category_labels,
             datasets: [{
-                label: is_expense ? 'Expenses' : 'Income',
-                data: values,
-                backgroundColor: ['rgb(255, 99, 132)',
-                'rgb(54, 162, 235)',
-                'rgb(255, 206, 86)',
-                'rgb(75, 192, 192)',
-                'rgb(153, 102, 255)',
-                'rgb(255, 159, 64)']
+                datalabels: {
+                    align: 'end',
+                    color: '#FFFFFF',
+                    formatter: (value, context) => {
+                        return "" + entries[context.dataIndex].percentage + "%" 
+                    }
+                },
+                
+                data: values, 
+                backgroundColor: [ 
+                '#ee1111',
+                '#ffc40d',
+                '#2d89ef',
+                '#1e7145',
+                '#7e3878',
+                '#b91d47',
+                '#da532c',
+                '#e3a21a',
+                '#2b5797',
+                '#00aba9',
+                '#9f00a7',
+                '#603cba'
+                ]
             }]
         },
-    
         // Configuration options go here
         options: {
-            responsive: true
+            responsive: true,
+            title: {
+                display : true,
+                text: is_expense ? 'Expenses' : 'Income',
+                fontSize: 16
+            },
+            legend: {
+                position: is_expense ? 'left' : 'right'
+            }
         }
     });
+    canvas.addEventListener('click', (event)=>{
+        let element = chart.getElementAtEvent(event)
 
+        if (element.length > 0){
+            var slice_index = element[0]["_index"];
+            var category = chart.data.labels[slice_index]
+        }
+    })
 }
 
 function addEntriesToTable(entries)
