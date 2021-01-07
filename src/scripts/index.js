@@ -8,14 +8,14 @@ var expense_chart = initChart(true)
 var income_chart = initChart(false)
 
 updateTables()
-getAllUsers(updateUserSelection)
+updateUserSelection()
 
 document.getElementById('start-date').valueAsDate = new Date()
 document.getElementById('end-date').valueAsDate = new Date()
 
 document.getElementById("user-select").addEventListener('change', (event) =>{
     selected_user = event.target.value
-    updateTables(start_time, end_time, selected_user)
+    updateTables()
 })
 
 let custom_date_div = document.getElementById("custom-date-search");
@@ -53,50 +53,56 @@ function addCellToRow(row, cell_idx, text)
     return cell
 }
 
-function updateNetIncome(row)
+function updateNetIncome()
 {
-    if (row.expenses === null) row.expenses = 0;
-    if (row.income === null) row.income = 0;
+    getNetIncome(start_time, end_time, selected_user, (row) => {
+        if (row.expenses === null) row.expenses = 0;
+        if (row.income === null) row.income = 0;
 
-    let total = (row.expenses + row.income) / 100
-    net_income = document.getElementById('net-income')
-    net_income.innerHTML = total 
-    net_income.style.color = total > 0 ? "green" : total < 0 ? "red" : "black"; 
+        let total = (row.expenses + row.income) / 100
+        net_income = document.getElementById('net-income')
+        net_income.innerHTML = total 
+        net_income.style.color = total > 0 ? "green" : total < 0 ? "red" : "black"; 
+    })
 }
 function updateCategoryTotals(entries, is_expense)
 {
     let category_labels =[]
     let values =[]
 
-    for (let i = 0; i < entries.length; ++i){
-        category_labels.push(entries[i].category)
-        values.push((entries[i].total / 100).toFixed(2))
-    }
-    if (is_expense){
-        updateChart(expense_chart, 'Expenses', category_labels, values)
-    } else {
-        updateChart(income_chart, 'Income', category_labels, values)
-    }
+    getCategoryTotals(start_time, end_time, selected_user, (entries, is_expense) =>{
+        for (let i = 0; i < entries.length; ++i){
+            category_labels.push(entries[i].category)
+            values.push((entries[i].total / 100).toFixed(2))
+        }
+        if (is_expense){
+            updateChart(expense_chart, 'Expenses', category_labels, values)
+        } else {
+            updateChart(income_chart, 'Income', category_labels, values)
+        }
+    })
 }
 
-function addEntriesToTable(entries)
+function addEntriesToTable()
 {
     let table = document.getElementById("history-table")
     
-    for (let i = 0; i < entries.length; ++i){
-        let row = table.insertRow(i+1)
-        row.style.backgroundColor = entries[i].amount < 0 ? "red" : "green"
+    getAllEntries(start_time, end_time, selected_user, (entries) => {
+        for (let i = 0; i < entries.length; ++i){
+            let row = table.insertRow(i+1)
+            row.style.backgroundColor = entries[i].amount < 0 ? "red" : "green"
 
-        let edit = addCellToRow(row, 0, "Edit") 
-        edit.addEventListener("click", () =>{
-            ipcRenderer.send('edit-entry-clicked', entries[i])
-        })
-        addCellToRow(row, 1, entries[i].name)
-        addCellToRow(row, 2, entries[i].date)
-        addCellToRow(row, 3, (entries[i].amount / 100).toFixed(2))
-        addCellToRow(row, 4, entries[i].subcategory === "" ? entries[i].category : entries[i].subcategory)
-        addCellToRow(row, 5, entries[i].note)
-    }
+            let edit = addCellToRow(row, 0, "Edit") 
+            edit.addEventListener("click", () =>{
+                ipcRenderer.send('edit-entry-clicked', entries[i])
+            })
+            addCellToRow(row, 1, entries[i].name)
+            addCellToRow(row, 2, entries[i].date)
+            addCellToRow(row, 3, (entries[i].amount / 100).toFixed(2))
+            addCellToRow(row, 4, entries[i].subcategory === "" ? entries[i].category : entries[i].subcategory)
+            addCellToRow(row, 5, entries[i].note)
+        }
+    })
 }
 
 function resetHTMLTable(table_name){
@@ -114,9 +120,9 @@ function resetHTMLTables()
 function updateTables()
 {
     resetHTMLTables();
-    getAllEntries(start_time, end_time, selected_user, addEntriesToTable)
-    getCategoryTotals(start_time, end_time, selected_user, updateCategoryTotals)
-    getNetIncome(start_time, end_time, selected_user, updateNetIncome)
+    addEntriesToTable()
+    updateCategoryTotals()
+    updateNetIncome()
 }
 
 function updateUserSelection(users)
@@ -125,10 +131,12 @@ function updateUserSelection(users)
     while (user_select.length > 1){
         user_select.remove(1)
     }
-    for (let i = 0; i < users.length; ++i){
-        user_select.options[i+1] = new Option(users[i].name, users[i].id)
-    }
 
+    getAllUsers((users)=>{
+        for (let i = 0; i < users.length; ++i){
+            user_select.options[i+1] = new Option(users[i].name, users[i].id)
+        }
+    })
 }
 
 document.getElementById("expense-btn").addEventListener('click', () =>{

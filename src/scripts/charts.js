@@ -62,7 +62,7 @@ function initChart(is_expense)
     if (is_expense) { // incomes do not have subcategorys so click event is unnecessary
         canvas.addEventListener('click', (event)=>{
             if (canvas.dataset.showingSubcats === 'true'){
-                getCategoryTotals(start_time, end_time, selected_user, updateCategoryTotals)
+                updateCategoryTotals()
                 canvas.dataset.showingSubcats = 'false'
                 return;
             }
