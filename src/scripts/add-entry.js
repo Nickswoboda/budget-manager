@@ -1,5 +1,4 @@
 const {ipcRenderer, remote} = require('electron')
-const { getAll } = require('electron-json-storage')
 const fs = require('fs')
 
 var expense = true

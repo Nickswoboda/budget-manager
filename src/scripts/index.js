@@ -132,15 +132,38 @@ function updateCategoryTotals(entries, is_expense)
             }
         }
     });
+    if (!is_expense) return // incomes do not have subcategorys so click event is unnecessary
     canvas.addEventListener('click', (event)=>{
+        if (canvas.dataset.showingSubcats === 'true'){
+            chart.data.labels = category_labels
+            chart.data.datasets[0].data = values
+            chart.options.title.text = "Expenses"
+            chart.update()
+            canvas.dataset.showingSubcats = 'false'
+
+            return;
+        }
         let element = chart.getElementAtEvent(event)
 
         if (element.length > 0){
             var slice_index = element[0]["_index"];
             var category = chart.data.labels[slice_index]
             
-            //chart.data.labels = ["20", "30"]
-            //chart.data.datasets[0].data = [20, 30]
+            getSubcategoryTotals(start_time, end_time, selected_user, (rows)=>{
+                subcat_labels = []
+                subcat_totals = []
+                for (let i = 0; i < rows.length; ++i){
+                    if (rows[i].category === category){
+                        subcat_labels.push(rows[i].subcategory)
+                        subcat_totals.push((rows[i].total/100).toFixed(2))
+                    }
+                }
+                chart.data.labels = subcat_labels
+                chart.data.datasets[0].data = subcat_totals
+                chart.options.title.text = category 
+                chart.update()
+            })
+            canvas.dataset.showingSubcats = 'true'
         }
     })
 }

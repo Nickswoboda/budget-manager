@@ -106,6 +106,15 @@ function getCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -
             (err, rows) =>{ if (err){ console.log(err) } else { callback(rows, false) } })
 }
 
+function getSubcategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
+{
+    db.all(`SELECT subcategory, category, SUM(amount) as total
+            FROM entries 
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}
+            GROUP BY subcategory`,
+            (err, rows) =>{ if (err){ console.log(err) } else { callback(rows, true) } }) //true = expense, false = income
+}
+
 function getNetIncome(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
     db.get(`SELECT SUM(amount) as expenses, t.income
