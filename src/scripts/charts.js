@@ -3,6 +3,9 @@ const ChartDataLabels = require('chartjs-plugin-datalabels')
 
 function initPieChart(is_expense)
 {
+    let expense_colors = [ '#ee1111', '#ffc40d', '#2d89ef', '#1e7145', '#7e3878', '#b91d47', '#da532c', '#e3a21a', '#2b5797', '#00aba9', '#9f00a7', '#603cba' ]
+    //different color ordering because it seems weird, if you only have 1 income category, that it would be an all red chart
+    let income_colors = [ '#1e7145', '#2d89ef', '#ffc40d', '#ee1111']
     var canvas = document.getElementById(is_expense ? 'expense-canvas' : 'income-canvas')
     let ctx = canvas.getContext('2d');
     let chart = new Chart(ctx, {
@@ -21,7 +24,7 @@ function initPieChart(is_expense)
                         return (value*100 / sum).toFixed(2)+"%";
                     }
                 },
-                backgroundColor: [ '#ee1111', '#ffc40d', '#2d89ef', '#1e7145', '#7e3878', '#b91d47', '#da532c', '#e3a21a', '#2b5797', '#00aba9', '#9f00a7', '#603cba' ]
+                backgroundColor: is_expense ? expense_colors : income_colors
             }]
         },
         options: {
