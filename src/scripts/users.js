@@ -14,10 +14,12 @@ add_btn.addEventListener('click', () => {
 })
 
 document.getElementById('submit-btn').addEventListener('click', () => {
-    if (user_input.value !== ""){
+    if (isValidUserName()){
         insertUser(user_input.value)
         showUserNameInput(false)
-        getAllUsers(updateUsers)
+        updateUsers()
+    } else {
+        ipcRenderer.send('invalid-entry-input', 'User names may only have alphabet characters.')
     }
 })
 
@@ -25,6 +27,13 @@ document.getElementById('cancel-btn').addEventListener('click', () => {
     showUserNameInput(false)
 })
 
+function isValidUserName()
+{
+    let name = user_input.value
+    let regex =/^([a-z]{1,})$/
+
+    return regex.test(name)
+}
 function showUserNameInput(show)
 {
     if (show){
@@ -38,30 +47,31 @@ function showUserNameInput(show)
 }
 
 
-function updateUsers(users)
+function updateUsers()
 {
     var user_table = document.getElementById('user-table')
     while (user_table.rows.length > 0){
         user_table.deleteRow(0)
     }
 
-    for (let i = 0; i < users.length; ++i){
-        let row = user_table.insertRow(i)
+    getAllUsers((users) => {
+        for (let i = 0; i < users.length; ++i){
+            let row = user_table.insertRow(i)
 
-        row.insertCell(0).innerHTML = users[i].name
-        row.insertCell(1).innerHTML = "      "
-        let del = row.insertCell(2) 
-        del.innerHTML = "X"
-        del.addEventListener('click', ()=>{
-            ipcRenderer.send('delete-user-requested', users[i])
-        })
-    }
-
+            row.insertCell(0).innerHTML = users[i].name
+            row.insertCell(1).innerHTML = "      "
+            let del = row.insertCell(2) 
+            del.innerHTML = "X"
+            del.addEventListener('click', ()=>{
+                ipcRenderer.send('delete-user-requested', users[i])
+            })
+        }
+    })
     ipcRenderer.send('users-updated')
 }
 
 getAllUsers(updateUsers)
 ipcRenderer.on('delete-user', (event, user_id) =>{
     deleteUser(user_id)
-    getAllUsers(updateUsers)
+    updateUsers()
 })

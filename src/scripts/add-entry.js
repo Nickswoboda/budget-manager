@@ -92,6 +92,10 @@ function isValidInput()
     let amount = document.getElementById('amount-input').valueAsNumber
     if (isNaN(amount) || amount === 0) error_msg = "'Amount' is not a valid number" 
 
+    let note = document.getElementById('note-input').value
+    let regex =/^([a-z0-9]{1,})$/
+    if (!regex.test(note)) error_msg = "Notes can not have special characters."
+
     if (error_msg.length !== 0){
         ipcRenderer.send('invalid-entry-input', error_msg)
         return false;
