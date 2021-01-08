@@ -19,7 +19,7 @@ document.getElementById('submit-btn').addEventListener('click', () => {
         showUserNameInput(false)
         updateUsers()
     } else {
-        ipcRenderer.send('invalid-entry-input', 'User names may only have alphabet characters.')
+        ipcRenderer.send('error-popup', 'User names may only have alphabet characters.')
     }
 })
 
@@ -70,7 +70,7 @@ function updateUsers()
     ipcRenderer.send('users-updated')
 }
 
-getAllUsers(updateUsers)
+updateUsers()
 ipcRenderer.on('delete-user', (event, user_id) =>{
     deleteUser(user_id)
     updateUsers()

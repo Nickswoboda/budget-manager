@@ -23,6 +23,8 @@ function setUsers()
     let select_box = document.getElementById('user-input')
 
     getAllUsers((users) => {
+        if (!users) return;
+
         for (let i = 0; i < users.length; ++i){
             select_box.options[i] = new Option(users[i].name, users[i].id.toString())
             if (entry_edited && entry_edited.name === users[i].name){
@@ -97,7 +99,7 @@ function isValidInput()
     if (!regex.test(note)) error_msg = "Notes can not have special characters."
 
     if (error_msg.length !== 0){
-        ipcRenderer.send('invalid-entry-input', error_msg)
+        ipcRenderer.send('error-popup', error_msg)
         return false;
     }
     return true

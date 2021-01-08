@@ -1,3 +1,4 @@
+const { app } = require('electron');
 const sqlite3 = require('sqlite3')
 
 var db = null;
@@ -89,7 +90,14 @@ function deleteUser(id)
 function getAllUsers(callback)
 {
     db.all(`SELECT id, name FROM users`, (err, rows) =>{
-        if (rows) callback(rows)
+        if (!err) callback(rows)
+    })
+}
+
+function getUserCount(callback)
+{
+    db.get(`SELECT COUNT(*) as count FROM users`, (err, count) =>{
+        if (!err) callback(count.count)
     })
 }
 

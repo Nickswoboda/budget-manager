@@ -143,11 +143,23 @@ function updateUserSelection(users)
 }
 
 document.getElementById("expense-btn").addEventListener('click', () =>{
-    ipcRenderer.send('add-entry-clicked', true)
+    getUserCount((count) => {
+        if (count > 0){
+            ipcRenderer.send('add-entry-clicked', true)
+        } else {
+            ipcRenderer.send('error-popup', 'No users found. You must add a User (File->Edit Users) before adding an entry.')
+        }
+    })
 })
 
 document.getElementById("income-btn").addEventListener('click', () =>{
-    ipcRenderer.send('add-entry-clicked', false)
+    getUserCount((count) => {
+        if (count > 0){
+            ipcRenderer.send('add-entry-clicked', true)
+        } else {
+            ipcRenderer.send('error-popup', 'No users found. You must add a User (File->Edit Users) before adding an entry.')
+        }
+    })
 })
 
 ipcRenderer.on('addEntry', (event, data) => {

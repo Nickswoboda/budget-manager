@@ -175,10 +175,10 @@ ipcMain.on('delete-entry-requested', (event, entry_index ) =>{
 
 })
 
-ipcMain.on('invalid-entry-input', (event, error) => {
+ipcMain.on('error-popup', (event, error) => {
     const options = {
         type: 'error',
-        title: 'Invalid Input',
+        title: 'Error',
         message: error
     }
 
