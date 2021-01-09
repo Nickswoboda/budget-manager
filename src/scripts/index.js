@@ -105,7 +105,6 @@ function updateBudgetTable(category = null)
                 row.cells[2].innerHTML = (rows.total/100).toFixed(2)
                 row.cells[3].innerHTML = (rows.total/100).toFixed(2)
             })
-
         }
     }
 }
