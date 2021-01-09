@@ -87,32 +87,23 @@ function updateBudgetTable(category = null)
         let row = table.insertRow(i+1)
 
         addCellToRow(row, 0, categories[i])
+        addCellToRow(row, 1, "")
+        addCellToRow(row, 2, "")
+        addCellToRow(row, 3, "")
 
         if (category === "All"){
             getTotalCategoryBudget(selected_user, categories[i], (value) => {
-                addCellToRow(row, 1, parseFloat(value).toFixed(2))
+                row.cells[1].innerHTML = parseFloat(value).toFixed(2)
             })
-            getCategoryTotals(start_time, end_time, selected_user, (rows, is_expense)=>{
-                if (is_expense){
-                    for (let j = 0; j < rows.length; ++j){
-                        if (rows[j].category === categories[i]){
-                            addCellToRow(row, 2, (rows[i].total/100).toFixed(2))
-                            addCellToRow(row, 3, (rows[i].total/100).toFixed(2))
-                            break;
-                        }
-                    }
-                }
+            getTotalByCategory(start_time, end_time, selected_user, categories[i], (rows)=>{
+                row.cells[2].innerHTML = (rows.total/100).toFixed(2)
+                row.cells[3].innerHTML = (rows.total/100).toFixed(2)
             })
         }
         else {
-            getSubcategoryTotals(start_time, end_time, selected_user, (rows)=>{
-                for (let j = 0; j < rows.length; ++j){
-                    if (rows[j].subcategory === categories[i]){
-                        addCellToRow(row, 2, (rows[i].total/100).toFixed(2))
-                        addCellToRow(row, 3, (rows[i].total/100).toFixed(2))
-                        break;
-                    }
-                }
+            getTotalBySubcategory(start_time, end_time, selected_user, categories[i], (rows)=>{
+                row.cells[2].innerHTML = (rows.total/100).toFixed(2)
+                row.cells[3].innerHTML = (rows.total/100).toFixed(2)
             })
 
         }
@@ -173,21 +164,28 @@ function updateNetIncome()
         net_income.style.color = sum > 0 ? "green" : sum < 0 ? "red" : "black"; 
     })
 }
-function updateCategoryTotals(entries, is_expense)
+function updateCategoryTotals(is_expense)
 {
-    getCategoryTotals(start_time, end_time, selected_user, (entries, is_expense) =>{
-        let category_labels =[]
-        let values =[]
-        for (let i = 0; i < entries.length; ++i){
-            category_labels.push(entries[i].category)
-            values.push((entries[i].total / 100).toFixed(2))
-        }
-        if (is_expense){
+    let category_labels =[]
+    let values =[]
+
+    if (is_expense){
+        getExpenseCategoryTotals(start_time, end_time, selected_user, (entries) =>{
+            for (let i = 0; i < entries.length; ++i){
+                category_labels.push(entries[i].category)
+                values.push((entries[i].total / 100).toFixed(2))
+            }
             updatePieChart(expense_chart, 'Expenses', category_labels, values)
-        } else {
+        })
+    } else {
+        getIncomeCategoryTotals(start_time, end_time, selected_user, (entries) =>{
+            for (let i = 0; i < entries.length; ++i){
+                category_labels.push(entries[i].category)
+                values.push((entries[i].total / 100).toFixed(2))
+            }
             updatePieChart(income_chart, 'Income', category_labels, values)
-        }
-    })
+        })
+    }
 }
 
 function addEntriesToTable()
@@ -224,7 +222,8 @@ function updateTables()
 {
     resetHTMLTable('history-table');
     addEntriesToTable()
-    updateCategoryTotals()
+    updateCategoryTotals(true)
+    updateCategoryTotals(false)
     updateNetIncome()
     updateBudgetTable()
 }

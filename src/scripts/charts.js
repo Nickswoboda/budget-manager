@@ -46,7 +46,7 @@ function initPieChart(is_expense)
     if (is_expense) { // incomes do not have subcategorys so click event is unnecessary
         canvas.addEventListener('click', (event)=>{
             if (canvas.dataset.showingSubcats === 'true'){
-                updateCategoryTotals()
+                updateCategoryTotals(true)
                 canvas.dataset.showingSubcats = 'false'
                 return;
             }
@@ -56,7 +56,7 @@ function initPieChart(is_expense)
                 var slice_index = element[0]["_index"];
                 var category = chart.data.labels[slice_index]
                 
-                getSubcategoryTotals(start_time, end_time, selected_user, (rows)=>{
+                getSubcategoryTotals(start_time, end_time, selected_user, category, (rows)=>{
                     subcat_labels = []
                     subcat_totals = []
                     for (let i = 0; i < rows.length; ++i){

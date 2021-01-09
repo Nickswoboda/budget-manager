@@ -10,23 +10,50 @@ function initDB(callback)
     })
 }
 
+function DBRun(query, callback)
+{
+    db.run(query, (err) =>{ 
+        if (err){
+            console.log(err)
+            console.log(query)
+        } else if (callback){
+            callback()
+        }
+    })
+}
+
+function DBGet(query, callback)
+{
+    db.get(query, (err, row)=> {
+        if (err){
+            console.log(err)
+            console.log(query)
+        } else {
+            callback(row)
+        }
+    })
+}
+
+function DBAll(query, callback)
+{ 
+    db.all(query, (err, rows)=> {
+        if (err){
+            console.log(err)
+            console.log(query)
+        } else {
+            callback(rows)
+        }
+    })
+}
+
 function createTables(callback)
 {
-    db.run(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, date TEXT, datetime INTEGER,
-        amount INTEGER, category TEXT, subcategory TEXT, note TEXT)`, 
-        (err) => { if (err) { console.log(err) }})
+    DBRun(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, date TEXT, datetime INTEGER,
+        amount INTEGER, category TEXT, subcategory TEXT, note TEXT)`)
 
-    db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`, (err) => {
-        if (err) { console.log(err)}
-    })
-    db.run(`CREATE TABLE IF NOT EXISTS budgets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, category TEXT, subcategory TEXT, amount INTEGER)`, 
-        (err) => { 
-            if (err) {
-                console.log(err)
-            } else if (callback) {
-                callback()
-            }
-    })
+    DBRun(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`)
+
+    DBRun(`CREATE TABLE IF NOT EXISTS budgets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, category TEXT, subcategory TEXT, amount INTEGER)`, callback)
 }
 
 function insertEntry(user_id, date, amount, category, subcategory, note)
@@ -34,18 +61,17 @@ function insertEntry(user_id, date, amount, category, subcategory, note)
     let datetime = Date.parse(date)
     //store as cents to help reduce float imprecision
     let cents = (amount * 100).toFixed(0) 
-    db.run(`INSERT INTO entries (user_id, date, datetime, amount, category, subcategory, note) VALUES(${user_id}, '${date}', ${datetime}, ${cents}, '${category}', '${subcategory}', '${note}')`, 
-    (err) =>{ if (err) console.log(err) })
+    DBRun(`INSERT INTO entries (user_id, date, datetime, amount, category, subcategory, note) 
+            VALUES(${user_id}, '${date}', ${datetime}, ${cents}, '${category}', '${subcategory}', '${note}')`) 
 }
 
 function getAllEntries(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
-    db.all(`SELECT entries.id, name, date, amount, category, subcategory, note FROM entries 
+    DBAll(`SELECT entries.id, name, date, amount, category, subcategory, note FROM entries 
             JOIN users
             ON users.id = entries.user_id
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end} 
-            ORDER BY datetime DESC`, 
-            (err, rows) =>{ if (err){ console.log(err) } else{ callback(rows) } })
+            ORDER BY datetime DESC`, callback)
 }
 
 function updateEntry(id, user_id, date, amount, category, subcategory, note)
@@ -53,58 +79,43 @@ function updateEntry(id, user_id, date, amount, category, subcategory, note)
     let datetime = Date.parse(date)
     //store as cents to help reduce float imprecision
     let cents = (amount * 100).toFixed(0) 
-    db.run(`UPDATE entries SET user_id=${user_id}, date='${date}', datetime=${datetime}, amount=${cents}, category='${category}', subcategory='${subcategory}', note='${note}' WHERE id=${id}`,
-    (err) => { if (err) console.log(err); })
+    DBRun(`UPDATE entries 
+            SET user_id=${user_id}, date='${date}', datetime=${datetime}, amount=${cents}, category='${category}', subcategory='${subcategory}', note='${note}' 
+            WHERE id=${id}`)
 }
 
 function deleteEntry(id)
 {
-    db.run(`DELETE FROM entries WHERE id=${id}`, (err) => { if (err) console.log(err); })
+    DBRun(`DELETE FROM entries WHERE id=${id}`)
 }
 
 function deleteEntriesByUser(user_id)
 {
-    db.run(`DELETE FROM entries WHERE user_id=${user_id}`, (err) => { if (err) console.log(err); })
+    DBRun(`DELETE FROM entries WHERE user_id=${user_id}`)
 }
 
 function insertUser(name)
 {
-    db.run(`INSERT INTO users (name) VALUES('${name}')`, (err) =>{ 
-        if (err) {
-            console.log(err) 
-        } else {
-            initUserBudgets(name)
-        }
-    })
+    DBRun(`INSERT INTO users (name) VALUES('${name}')`, initUserBudgets.bind(null, name))
 }
 function initUserBudgets(name)
 {
-    db.get(`SELECT id FROM users WHERE name = '${name}'`, (err, row) =>{
-        if (err){
-            console.log(err)
-        } else {
-            let user_id = row.id
-            if (!fs.existsSync("assets/categories.json")){
-                console.log("Unable to load categories.json");
+    DBGet(`SELECT id FROM users WHERE name = '${name}'`, (row) =>{
+        let user_id = row.id
+        if (!fs.existsSync("assets/categories.json")){
+            console.log("Unable to load categories.json");
+        }
+        let data = fs.readFileSync("assets/categories.json")
+        let expenses = JSON.parse(data).expense
+
+        for (const [category, subcategories] of Object.entries(expenses)){
+            for (let i = 0; i < subcategories.length; ++i){
+                DBRun(`INSERT INTO budgets (user_id, category, subcategory, amount) VALUES (${user_id}, '${category}', '${subcategories[i]}', 0)`)
             }
 
-            let data = fs.readFileSync("assets/categories.json")
-            let expenses = JSON.parse(data).expense
-
-            for (const [category, subcategories] of Object.entries(expenses)){
-                //for categories without subcategories. i.e Misc
-                if (subcategories.length === 0){
-                    db.run(`INSERT INTO budgets (user_id, category, subcategory, amount) VALUES (${user_id}, '${category}', '${category}', 0)`, (err) =>{
-                        if (err) console.log(err)
-                    })
-                }
-                else {
-                    for (let i = 0; i < subcategories.length; ++i){
-                        db.run(`INSERT INTO budgets (user_id, category, subcategory, amount) VALUES (${user_id}, '${category}', '${subcategories[i]}', 0)`, (err) =>{
-                            if (err) console.log(err)
-                        })
-                    }
-                }
+            //for categories without subcategories. i.e Misc
+            if (subcategories.length === 0){
+                DBRun(`INSERT INTO budgets (user_id, category, subcategory, amount) VALUES (${user_id}, '${category}', '${category}', 0)`)
             }
         }
     })
@@ -112,122 +123,82 @@ function initUserBudgets(name)
 
 function getSubcategoryBudget(user_id, subcategory, callback)
 {
-    db.get(`SELECT amount FROM budgets WHERE user_id = ${user_id} AND subcategory = '${subcategory}'`, (err, row) => {
-        if (err){
-            console.log(err)
-        } else {
-            callback(row.amount)
-        }
-    })
+    DBGet(`SELECT amount FROM budgets WHERE user_id = ${user_id} AND subcategory = '${subcategory}'`, (row) => { callback(row.amount) })
 }
 
 function getTotalCategoryBudget(user_id, category, callback)
 {
-    db.get(`SELECT SUM(amount) as amount FROM budgets WHERE user_id=${user_id} AND category = '${category}'`, (err, row) =>{
-        if (err){
-            console.log(err)
-        } else {
-            console.log(row)
-            callback(row.amount)
-        }
-    })
+    DBGet(`SELECT SUM(amount) as amount FROM budgets WHERE user_id=${user_id} AND category = '${category}'`, (row) =>{ callback(row.amount) })
 }
 
 function updateSubcategoryBudget(user_id, subcategory, value)
 {
-    db.run(`UPDATE budgets SET amount=${value} WHERE user_id = ${user_id} AND subcategory='${subcategory}'`)
+    DBRun(`UPDATE budgets SET amount=${value} WHERE user_id = ${user_id} AND subcategory='${subcategory}'`)
 }
 
 function updateUser(id, name)
 {
-    db.run(`UPDATE users SET name=${name}`, (err) => { if (err) console.log(err); })
+    DBRun(`UPDATE users SET name=${name}`)
 }
 
 function deleteUser(id)
 {
-    db.run(`DELETE FROM users WHERE id=${id}`, (err) => { 
-        if (err) {
-            console.log(err) 
-        } else {
-            deleteEntriesByUser(id)
-        }
-    })
-
+    DBRun(`DELETE FROM users WHERE id=${id}`, deleteEntriesByUser.bind(null, id))
 }
 
 function getAllUsers(callback)
 {
-    db.all(`SELECT id, name FROM users`, (err, rows) =>{
-        if (!err) callback(rows)
-    })
+    DBAll(`SELECT id, name FROM users`, callback)
 }
 
 function getUserCount(callback)
 {
-    db.get(`SELECT COUNT(*) as count FROM users`, (err, count) =>{
-        if (!err) callback(count.count)
-    })
+    DBGet(`SELECT COUNT(*) as count FROM users`, (row) =>{callback(row.count) })
 }
 
-function getCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
+function getTotalByCategory(start = 0, end = Number.MAX_SAFE_INTEGER, user_id=-1, category, callback)
 {
-    db.all(`SELECT category, SUM(amount) as total, ROUND(SUM(amount) * 100.0 / t.s, 2) AS percentage
+    DBGet(`SELECT SUM(amount) as total FROM entries
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND category='${category}' AND entries.amount < 0 
+                AND entries.datetime >= ${start} AND datetime <= ${end}`,
+                callback)
+}
+function getExpenseCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
+{
+    DBAll(`SELECT category, SUM(amount) as total
             FROM entries 
-            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}
-            GROUP BY category`,
-            (err, rows) =>{ if (err){ console.log(err) } else { callback(rows, true) } }) //true = expense, false = income
+            GROUP BY category`, callback) 
+}
 
-    db.all(`SELECT category, SUM(amount) as total, ROUND(SUM(amount) * 100.0 / t.s, 2) AS percentage
+function getIncomeCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
+{
+    DBAll(`SELECT category, SUM(amount) as total
             FROM entries 
-            CROSS JOIN (SELECT SUM(amount) as s FROM entries WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}) t
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount > 0 AND entries.datetime >= ${start} AND datetime <= ${end}
-            GROUP BY category`,
-            (err, rows) =>{ if (err){ console.log(err) } else { callback(rows, false) } })
+            GROUP BY category`, callback)
 }
 
-function getSubcategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
+function getSubcategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, category, callback)
 {
-    db.all(`SELECT subcategory, category, SUM(amount) as total
+    DBAll(`SELECT subcategory, category, SUM(amount) as total
             FROM entries 
-            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}
-            GROUP BY subcategory`,
-            (err, rows) =>{ if (err){ console.log(err) } else { callback(rows, true) } }) //true = expense, false = income
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND category = '${category}' AND entries.amount < 0 AND entries.datetime >= ${start} AND datetime <= ${end}
+            GROUP BY subcategory`, callback) 
 }
+function getTotalBySubcategory(start = 0, end = Number.MAX_SAFE_INTEGER, user_id=-1, subcategory, callback)
+{
+    DBGet(`SELECT SUM(amount) as total FROM entries
+            WHERE (${user_id} < 0 OR user_id = ${user_id}) AND subcategory='${subcategory}' AND entries.amount < 0 
+                AND entries.datetime >= ${start} AND datetime <= ${end}`,
+                callback)
+}
+
 
 function getNetIncomeByDate(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
-    db.all(`SELECT date, SUM(amount) as amount
+    DBAll(`SELECT date, SUM(amount) as amount
             FROM entries 
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end}
-            GROUP BY date`,
-            (err, rows) => {  if (rows) callback(rows) })
+            GROUP BY date`, callback)
 }
-
-/*function saveToCsv(rows){
-    var csv = []
-
-    for (var i = 0; i < rows.length; ++i){
-        var row = []
-
-        for (var j = 0; j < Object.keys(rows[i]).length; ++j){
-            row.push(rows[i][Object.keys(rows[i])[j]])
-        }
-
-        csv.push(row.join(","))
-    }
-
-    csv = csv.join("\n")
-    fs.writeFileSync("assets/data.csv", csv)
-}
-
-function loadFromCsv()
-{
-    let data = fs.readFileSync("assets/data.csv").toString()
-
-    let entries = data.split("\n")
-    entries.forEach((value) => {
-        let values = value.split(",")
-        insertRow(values[1], values[3], values[4], values[5], values[6])
-    })
-}*/
