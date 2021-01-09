@@ -30,7 +30,7 @@ document.getElementById('cancel-btn').addEventListener('click', () => {
 function isValidUserName()
 {
     let name = user_input.value
-    let regex =/^([a-z]{1,})$/
+    let regex =/^([a-zA-Z]{1,})$/
 
     return regex.test(name)
 }
