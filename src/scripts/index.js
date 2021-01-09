@@ -256,7 +256,7 @@ document.getElementById("expense-btn").addEventListener('click', () =>{
 document.getElementById("income-btn").addEventListener('click', () =>{
     getUserCount((count) => {
         if (count > 0){
-            ipcRenderer.send('add-entry-clicked', true)
+            ipcRenderer.send('add-entry-clicked', false)
         } else {
             ipcRenderer.send('error-popup', 'No users found. You must add a User (File->Edit Users) before adding an entry.')
         }
