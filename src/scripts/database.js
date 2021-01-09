@@ -92,6 +92,7 @@ function deleteEntry(id)
 function deleteEntriesByUser(user_id)
 {
     DBRun(`DELETE FROM entries WHERE user_id=${user_id}`)
+    DBRun(`DELETE FROM budgets WHERE user_id=${user_id}`)
 }
 
 function insertUser(name)
@@ -128,7 +129,12 @@ function getSubcategoryBudget(user_id, subcategory, callback)
 
 function getTotalCategoryBudget(user_id, category, callback)
 {
-    DBGet(`SELECT SUM(amount) as amount FROM budgets WHERE user_id=${user_id} AND category = '${category}'`, (row) =>{ callback(row.amount) })
+    //all users selected
+    if (user_id < 0){
+        DBGet(`SELECT SUM(amount) as amount FROM budgets WHERE category = '${category}'`, (row) =>{ callback(row.amount) })
+    } else {
+        DBGet(`SELECT SUM(amount) as amount FROM budgets WHERE user_id=${user_id} AND category = '${category}'`, (row) =>{ callback(row.amount) })
+    }
 }
 
 function updateSubcategoryBudget(user_id, subcategory, value)
