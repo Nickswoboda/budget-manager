@@ -14,19 +14,18 @@ function createTables(callback)
 {
     db.run(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, date TEXT, datetime INTEGER,
         amount INTEGER, category TEXT, subcategory TEXT, note TEXT)`, 
+        (err) => { if (err) { console.log(err) }})
+
+    db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`, (err) => {
+        if (err) { console.log(err)}
+    })
+    db.run(`CREATE TABLE IF NOT EXISTS budgets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, category TEXT, subcategory TEXT, amount INTEGER)`, 
         (err) => { 
             if (err) {
                 console.log(err)
             } else if (callback) {
                 callback()
             }
-         })
-
-    db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`, (err) => {
-        if (err) { console.log(err)}
-    })
-    db.run(`CREATE TABLE IF NOT EXISTS budgets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, category TEXT, amount INTEGER)`, (err) => {
-        if (err) {console.log(err)}
     })
 }
 
@@ -92,11 +91,19 @@ function initUserBudgets(name)
             let data = fs.readFileSync("assets/categories.json")
             let expenses = JSON.parse(data).expense
 
-            for (const [key, subcategories] of Object.entries(expenses)){
-                for (let i = 0; i < subcategories.length; ++i){
-                    db.run(`INSERT INTO budgets (user_id, category, amount) VALUES (${user_id}, '${subcategories[i]}', 0)`, (err) =>{
+            for (const [category, subcategories] of Object.entries(expenses)){
+                //for categories without subcategories. i.e Misc
+                if (subcategories.length === 0){
+                    db.run(`INSERT INTO budgets (user_id, category, subcategory, amount) VALUES (${user_id}, '${category}', '${category}', 0)`, (err) =>{
                         if (err) console.log(err)
                     })
+                }
+                else {
+                    for (let i = 0; i < subcategories.length; ++i){
+                        db.run(`INSERT INTO budgets (user_id, category, subcategory, amount) VALUES (${user_id}, '${category}', '${subcategories[i]}', 0)`, (err) =>{
+                            if (err) console.log(err)
+                        })
+                    }
                 }
             }
         }
@@ -105,7 +112,7 @@ function initUserBudgets(name)
 
 function getSubcategoryBudget(user_id, subcategory, callback)
 {
-    db.get(`SELECT amount FROM budgets WHERE user_id = ${user_id} AND category = '${subcategory}'`, (err, row) => {
+    db.get(`SELECT amount FROM budgets WHERE user_id = ${user_id} AND subcategory = '${subcategory}'`, (err, row) => {
         if (err){
             console.log(err)
         } else {
@@ -114,9 +121,21 @@ function getSubcategoryBudget(user_id, subcategory, callback)
     })
 }
 
+function getTotalCategoryBudget(user_id, category, callback)
+{
+    db.get(`SELECT SUM(amount) as amount FROM budgets WHERE user_id=${user_id} AND category = '${category}'`, (err, row) =>{
+        if (err){
+            console.log(err)
+        } else {
+            console.log(row)
+            callback(row.amount)
+        }
+    })
+}
+
 function updateSubcategoryBudget(user_id, subcategory, value)
 {
-    db.run(`UPDATE budgets SET amount=${value} WHERE user_id = ${user_id} AND category='${subcategory}'`)
+    db.run(`UPDATE budgets SET amount=${value} WHERE user_id = ${user_id} AND subcategory='${subcategory}'`)
 }
 
 function updateUser(id, name)

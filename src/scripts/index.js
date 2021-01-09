@@ -10,7 +10,7 @@ let net_income_chart = initLineChart()
 
 let expense_categories = getExpenseCategories()
 
-initDB(updateTables)
+initDB()
 updateUserSelection()
 initCategoryBudgetSelect()
 
@@ -30,6 +30,8 @@ function initCategoryBudgetSelect()
     select.addEventListener('change', (event) =>{
         updateBudgetTable(event.target.value)
     })
+
+    updateTables()
 }
 
 document.getElementById('start-date').valueAsDate = new Date()
@@ -85,9 +87,11 @@ function updateBudgetTable(category = null)
         let row = table.insertRow(i+1)
 
         addCellToRow(row, 0, categories[i])
-        addCellToRow(row, 1, 0)
-        
+
         if (category === "All"){
+            getTotalCategoryBudget(selected_user, categories[i], (value) => {
+                addCellToRow(row, 1, parseFloat(value).toFixed(2))
+            })
             getCategoryTotals(start_time, end_time, selected_user, (rows, is_expense)=>{
                 if (is_expense){
                     for (let j = 0; j < rows.length; ++j){
@@ -236,7 +240,9 @@ function updateUserSelection(users)
         for (let i = 0; i < users.length; ++i){
             user_select.options[i+1] = new Option(users[i].name, users[i].id)
         }
+        user_select.value = parseInt(selected_user)
     })
+
 }
 
 document.getElementById("expense-btn").addEventListener('click', () =>{
