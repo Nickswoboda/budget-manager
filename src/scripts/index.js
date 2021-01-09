@@ -1,4 +1,6 @@
 const { ipcRenderer} = require('electron')
+const fs = require('fs')
+const { start } = require('repl')
 
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
@@ -8,8 +10,29 @@ let expense_chart = initPieChart(true)
 let income_chart = initPieChart(false)
 let net_income_chart = initLineChart() 
 
+let expense_categories = getExpenseCategories()
+
 initDB(updateTables)
 updateUserSelection()
+initCategoryBudgetSelect()
+
+function initCategoryBudgetSelect()
+{
+    let select = document.getElementById("cat-budget-select")
+
+    while (select.options.length > 1){
+        select.remove(0)
+    }
+
+    let category_names = Object.keys(expense_categories)
+    for (let i = 0; i < category_names.length; ++i){
+        select.options[i+1] = new Option(category_names[i], category_names[i])
+    }
+
+    select.addEventListener('change', (event) =>{
+        updateBudgetTable(event.target.value)
+    })
+}
 
 document.getElementById('start-date').valueAsDate = new Date()
 document.getElementById('end-date').valueAsDate = new Date()
@@ -18,6 +41,81 @@ document.getElementById("user-select").addEventListener('change', (event) =>{
     selected_user = event.target.value
     updateTables()
 })
+
+document.getElementById("view-select").addEventListener('change', (event) =>{
+    changeView(event.target.value)
+})
+
+function changeView(value)
+{
+    let charts = document.getElementsByClassName('chart-div')
+    if (value === "budget"){
+        document.getElementById('budget-table-div').style.display = "inline"
+        for (let i = 0; i < charts.length; ++i){
+            charts[i].style.display = "none"
+        }
+    } else {
+        document.getElementById('budget-table-div').style.display = "none"
+        for (let i = 0; i < charts.length; ++i){
+            charts[i].style.display = "inline"
+        }
+    }
+}
+
+function getExpenseCategories()
+{
+    if (!fs.existsSync("assets/categories.json")){
+        console.log("Unable to load categories.json");
+    }
+
+    let data = fs.readFileSync("assets/categories.json")
+    return JSON.parse(data).expense
+}
+
+function updateBudgetTable(category = null)
+{
+    resetHTMLTable('budget-table')
+    let table = document.getElementById('budget-table')
+
+    if (!category){
+        category = table.dataset.category
+    }
+    let categories = category === "All" ? Object.keys(expense_categories) : expense_categories[category]
+    table.dataset.category = category
+
+    for (let i = 0; i < categories.length; ++i){
+        let row = table.insertRow(i+1)
+
+        addCellToRow(row, 0, categories[i])
+        addCellToRow(row, 1, 0)
+        
+        if (category === "All"){
+            getCategoryTotals(start_time, end_time, selected_user, (rows, is_expense)=>{
+                if (is_expense){
+                    for (let j = 0; j < rows.length; ++j){
+                        if (rows[j].category === categories[i]){
+                            addCellToRow(row, 2, (rows[i].total/100).toFixed(2))
+                            addCellToRow(row, 3, (rows[i].total/100).toFixed(2))
+                            break;
+                        }
+                    }
+                }
+            })
+        }
+        else {
+            getSubcategoryTotals(start_time, end_time, selected_user, (rows)=>{
+                for (let j = 0; j < rows.length; ++j){
+                    if (rows[j].subcategory === categories[i]){
+                        addCellToRow(row, 2, (rows[i].total/100).toFixed(2))
+                        addCellToRow(row, 3, (rows[i].total/100).toFixed(2))
+                        break;
+                    }
+                }
+            })
+
+        }
+    }
+}
 
 let custom_date_div = document.getElementById("custom-date-search");
 document.getElementById("date-search-select").addEventListener('change', (event) =>{
@@ -112,8 +210,8 @@ function addEntriesToTable()
     })
 }
 
-function resetHTMLTable(){
-    let table = document.getElementById('history-table')
+function resetHTMLTable(name){
+    let table = document.getElementById(name)
     let num_rows = table.rows.length
     for ( i = 1; i < num_rows; ++i){
         table.deleteRow(1)
@@ -122,10 +220,11 @@ function resetHTMLTable(){
 
 function updateTables()
 {
-    resetHTMLTable();
+    resetHTMLTable('history-table');
     addEntriesToTable()
     updateCategoryTotals()
     updateNetIncome()
+    updateBudgetTable()
 }
 
 function updateUserSelection(users)

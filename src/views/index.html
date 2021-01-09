@@ -45,13 +45,35 @@
             </thead>
         </table>
     </div>
-    <div class="chart-div">
+    <label for="view">View: </label>
+    <select id="view-select">
+        <option value="budget">Budget</option>
+        <option value="charts">Charts</option>
+    </select><br><br>
+    <div id="budget-table-div">
+        <label for="cat-budget">By Category: </label>
+        <select id="cat-budget-select">
+            <option value="All">All</option>
+        </select>
+        <h1>Budget</h1>
+        <table id="budget-table" data-category="All">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Budgeted</th>
+                    <th>Spent</th>
+                    <th>Left</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="chart-div" style="display: none;">
         <canvas id="expense-canvas"></canvas>
     </div>
-    <div class="chart-div">
+    <div class="chart-div" style="display: none;">
         <canvas id="income-canvas"></canvas>
     </div>
-    <div class="chart-div">
+    <div class="chart-div" style="display: none;">
         <canvas id="net-income-canvas"></canvas>
     </div>
     <br>
