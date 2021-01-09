@@ -92,21 +92,30 @@ function updateBudgetTable(category = null)
         addCellToRow(row, 3, "")
 
         if (category === "All"){
-            getTotalCategoryBudget(selected_user, categories[i], (value) => {
-                row.cells[1].innerHTML = parseFloat(value).toFixed(2)
-            })
-            getTotalByCategory(start_time, end_time, selected_user, categories[i], (rows)=>{
-                row.cells[2].innerHTML = (rows.total/100).toFixed(2)
-                row.cells[3].innerHTML = (rows.total/100).toFixed(2)
+            getTotalCategoryBudget(selected_user, categories[i], (budgeted) => {
+                getTotalByCategory(start_time, end_time, selected_user, categories[i], (total)=>{
+                    fillInBudgetCells(row, budgeted / 100, total)
+                })
             })
         }
         else {
-            getTotalBySubcategory(start_time, end_time, selected_user, categories[i], (rows)=>{
-                row.cells[2].innerHTML = (rows.total/100).toFixed(2)
-                row.cells[3].innerHTML = (rows.total/100).toFixed(2)
+            getSubcategoryBudget(selected_user, categories[i], (budgeted) => {
+                getTotalBySubcategory(start_time, end_time, selected_user, categories[i], (total)=>{
+                    fillInBudgetCells(row, budgeted / 100, total)
+                })
             })
         }
     }
+}
+
+function fillInBudgetCells(row, budgeted, total)
+{
+    row.cells[1].innerHTML = budgeted.toFixed(2)
+    row.cells[2].innerHTML = total.toFixed(2)
+
+    let diff = budgeted + total
+    row.cells[3].innerHTML = diff.toFixed(2) 
+    row.cells[3].style.color = diff > 0 ? "green" : diff < 0 ? "red" : "black"; 
 }
 
 let custom_date_div = document.getElementById("custom-date-search");

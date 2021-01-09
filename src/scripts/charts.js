@@ -60,10 +60,8 @@ function initPieChart(is_expense)
                     subcat_labels = []
                     subcat_totals = []
                     for (let i = 0; i < rows.length; ++i){
-                        if (rows[i].category === category){
-                            subcat_labels.push(rows[i].subcategory)
-                            subcat_totals.push((rows[i].total/100).toFixed(2))
-                        }
+                        subcat_labels.push(rows[i].subcategory)
+                        subcat_totals.push((rows[i].total/100).toFixed(2))
                     }
                     updatePieChart(chart, category, subcat_labels, subcat_totals)
                 })

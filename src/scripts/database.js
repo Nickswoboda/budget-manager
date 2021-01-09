@@ -124,7 +124,12 @@ function initUserBudgets(name)
 
 function getSubcategoryBudget(user_id, subcategory, callback)
 {
-    DBGet(`SELECT amount FROM budgets WHERE user_id = ${user_id} AND subcategory = '${subcategory}'`, (row) => { callback(row.amount) })
+    //all users selected
+    if (user_id < 0){
+        DBGet(`SELECT amount FROM budgets WHERE subcategory = '${subcategory}'`, (row) => { callback(row.amount) })
+    }else {
+        DBGet(`SELECT amount FROM budgets WHERE user_id = ${user_id} AND subcategory = '${subcategory}'`, (row) => { callback(row.amount) })
+    }
 }
 
 function getTotalCategoryBudget(user_id, category, callback)
@@ -139,7 +144,9 @@ function getTotalCategoryBudget(user_id, category, callback)
 
 function updateSubcategoryBudget(user_id, subcategory, value)
 {
-    DBRun(`UPDATE budgets SET amount=${value} WHERE user_id = ${user_id} AND subcategory='${subcategory}'`)
+    //storing as cents reduces loss of precision
+    let cents = (value * 100).toFixed(0) 
+    DBRun(`UPDATE budgets SET amount=${cents} WHERE user_id = ${user_id} AND subcategory='${subcategory}'`)
 }
 
 function updateUser(id, name)
@@ -166,8 +173,13 @@ function getTotalByCategory(start = 0, end = Number.MAX_SAFE_INTEGER, user_id=-1
 {
     DBGet(`SELECT SUM(amount) as total FROM entries
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND category='${category}' AND entries.amount < 0 
-                AND entries.datetime >= ${start} AND datetime <= ${end}`,
-                callback)
+                AND entries.datetime >= ${start} AND datetime <= ${end}`, (row) => {
+                    if (row.total === null){
+                        callback(0)
+                    } else {
+                        callback(row.total/100)
+                    }
+                })
 }
 function getExpenseCategoryTotals(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, callback)
 {
@@ -196,8 +208,13 @@ function getTotalBySubcategory(start = 0, end = Number.MAX_SAFE_INTEGER, user_id
 {
     DBGet(`SELECT SUM(amount) as total FROM entries
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND subcategory='${subcategory}' AND entries.amount < 0 
-                AND entries.datetime >= ${start} AND datetime <= ${end}`,
-                callback)
+                AND entries.datetime >= ${start} AND datetime <= ${end}`, (row) =>{
+                    if (row.total === null){
+                        callback(0)
+                    } else {
+                        callback(row.total/100)
+                    }
+                })
 }
 
 
