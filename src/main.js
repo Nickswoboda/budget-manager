@@ -5,6 +5,7 @@ let main_win = null
 let entry_win = null
 let settings_win = null
 let user_win = null
+let budget_win = null
 
 settings.init()
 
@@ -44,6 +45,11 @@ function createMainWindow(){
                {
                    label: 'Edit Users', click() {
                         createEditUserWindow()
+                   }
+               },
+               {
+                   label: 'Edit Budgets', click() {
+                       createBudgetWindow()
                    }
                },
                {
@@ -139,11 +145,21 @@ function createEditUserWindow()
     user_win.loadFile('src/views/users.html')
     user_win.once('ready-to-show', () =>{
         user_win.show()
-        settings.getSetting('users', (users) => {
-            user_win.webContents.send('initialize-users', users)
-        })
     })
     user_win.webContents.openDevTools()
+}
+
+function createBudgetWindow()
+{
+    budget_win = createBrowser(300, 500, false, true)
+    budget_win.on('close', () => {
+        budget_win = null
+    })
+    budget_win.loadFile('src/views/budgets.html')
+    budget_win.once('ready-to-show', () =>{
+        budget_win.show()
+    })
+    budget_win.webContents.openDevTools()
 }
 
 ipcMain.on('add-entry-clicked', (event, is_expense) => {

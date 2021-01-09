@@ -23,7 +23,10 @@ function createTables(callback)
          })
 
     db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`, (err) => {
-        if (err) { console.log(error)}
+        if (err) { console.log(err)}
+    })
+    db.run(`CREATE TABLE IF NOT EXISTS budgets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, category TEXT, is_subcategory INTEGER, budget_amout INTEGER)`, (err) => {
+        if (err) {console.log(err)}
     })
 }
 
