@@ -1,5 +1,5 @@
-const { app } = require('electron');
 const sqlite3 = require('sqlite3')
+const fs = require('fs')
 
 var db = null;
 
@@ -25,7 +25,7 @@ function createTables(callback)
     db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)`, (err) => {
         if (err) { console.log(err)}
     })
-    db.run(`CREATE TABLE IF NOT EXISTS budgets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, category TEXT, is_subcategory INTEGER, budget_amout INTEGER)`, (err) => {
+    db.run(`CREATE TABLE IF NOT EXISTS budgets (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, category TEXT, amount INTEGER)`, (err) => {
         if (err) {console.log(err)}
     })
 }
@@ -70,9 +70,55 @@ function deleteEntriesByUser(user_id)
 
 function insertUser(name)
 {
-    db.run(`INSERT INTO users (name) VALUES('${name}')`, 
-    (err) =>{ if (err) console.log(err) })
+    db.run(`INSERT INTO users (name) VALUES('${name}')`, (err) =>{ 
+        if (err) {
+            console.log(err) 
+        } else {
+            initUserBudgets(name)
+        }
+    })
 }
+function initUserBudgets(name)
+{
+    db.get(`SELECT id FROM users WHERE name = '${name}'`, (err, row) =>{
+        if (err){
+            console.log(err)
+        } else {
+            let user_id = row.id
+            if (!fs.existsSync("assets/categories.json")){
+                console.log("Unable to load categories.json");
+            }
+
+            let data = fs.readFileSync("assets/categories.json")
+            let expenses = JSON.parse(data).expense
+
+            for (const [key, subcategories] of Object.entries(expenses)){
+                for (let i = 0; i < subcategories.length; ++i){
+                    db.run(`INSERT INTO budgets (user_id, category, amount) VALUES (${user_id}, '${subcategories[i]}', 0)`, (err) =>{
+                        if (err) console.log(err)
+                    })
+                }
+            }
+        }
+    })
+}
+
+function getSubcategoryBudget(user_id, subcategory, callback)
+{
+    db.get(`SELECT amount FROM budgets WHERE user_id = ${user_id} AND category = '${subcategory}'`, (err, row) => {
+        if (err){
+            console.log(err)
+        } else {
+            callback(row.amount)
+        }
+    })
+}
+
+function updateSubcategoryBudget(user_id, subcategory, value)
+{
+    db.run(`UPDATE budgets SET amount=${value} WHERE user_id = ${user_id} AND category='${subcategory}'`)
+}
+
 function updateUser(id, name)
 {
     db.run(`UPDATE users SET name=${name}`, (err) => { if (err) console.log(err); })

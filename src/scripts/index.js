@@ -1,6 +1,4 @@
 const { ipcRenderer} = require('electron')
-const fs = require('fs')
-const { start } = require('repl')
 
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER

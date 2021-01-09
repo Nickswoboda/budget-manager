@@ -1,5 +1,4 @@
 const {ipcRenderer, remote} = require('electron')
-const fs = require('fs')
 
 var expense = true
 var entry_edited = null
@@ -30,7 +29,6 @@ function setUsers()
             if (entry_edited && entry_edited.name === users[i].name){
                 select_box.value = users[i].id.toString()
             }
-
         }
     })
 }
