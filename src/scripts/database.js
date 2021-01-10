@@ -12,6 +12,11 @@ function initDB(callback)
 
 function DBRun(query, callback)
 {
+    if (!db){
+        initDB() 
+        return;
+    }
+
     db.run(query, (err) =>{ 
         if (err){
             console.log(err)
@@ -24,6 +29,10 @@ function DBRun(query, callback)
 
 function DBGet(query, callback)
 {
+    if (!db){
+        initDB() 
+        return;
+    }
     db.get(query, (err, row)=> {
         if (err){
             console.log(err)
@@ -36,6 +45,10 @@ function DBGet(query, callback)
 
 function DBAll(query, callback)
 { 
+    if (!db){
+        initDB() 
+        return;
+    }
     db.all(query, (err, rows)=> {
         if (err){
             console.log(err)
