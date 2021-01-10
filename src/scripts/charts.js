@@ -14,7 +14,7 @@ function initPieChart(is_expense)
             datasets: [{
                 datalabels: {
                     align: 'end',
-                    color: '#FFFFFF',
+                    color: 'black',
                     formatter: (value, context) => {
                         let sum = 0;
                         let data_values = context.chart.data.datasets[0].data
@@ -39,6 +39,23 @@ function initPieChart(is_expense)
                     event.stopPropagation()
                 }
 
+            },
+            tooltips: {
+                mode: 'label',
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        var dataset = data.datasets[tooltipItem.datasetIndex];
+                        var meta = dataset._meta[Object.keys(dataset._meta)[0]];
+                        var total = meta.total;
+                        var currentValue = dataset.data[tooltipItem.index];
+                        var percentage = parseFloat((currentValue/total*100).toFixed(2));
+                        return currentValue + ' (' + Math.abs(percentage) + '%)';
+                    },
+                    title: function(tooltipItem, data) {
+                        return data.labels[tooltipItem[0].index];
+                    }
+
+                }
             }
         }
     });
