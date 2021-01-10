@@ -11,6 +11,11 @@ function initUserSelect()
     let user_select = document.getElementById('user-select')
 
     getAllUsers((users) => {
+        if (users.length === 0){
+            ipcRenderer.send('error-popup', 'You must add a user (File->Edit Users) before setting budgets.')
+            remote.getCurrentWindow().close()
+            return
+        }
         for (let i = 0; i < users.length; ++i){
             user_select.options[i] = new Option(users[i].name, parseInt(users[i].id))
         }
