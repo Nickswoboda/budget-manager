@@ -83,6 +83,11 @@ function updateBudgetTable(category = null)
     let categories = category === "All" ? Object.keys(expense_categories) : expense_categories[category]
     table.dataset.category = category
 
+    let date = new Date()
+    let first_of_month = new Date(date.getFullYear(), date.getMonth(), 1)
+    //used for timezone difference between table dates
+    first_of_month.setHours(-8)
+
     for (let i = 0; i < categories.length; ++i){
         let row = table.insertRow(i+1)
 
@@ -93,14 +98,14 @@ function updateBudgetTable(category = null)
 
         if (category === "All"){
             getTotalCategoryBudget(selected_user, categories[i], (budgeted) => {
-                getTotalByCategory(start_time, end_time, selected_user, categories[i], (total)=>{
+                getTotalByCategory(first_of_month.getTime(), end_time, selected_user, categories[i], (total)=>{
                     fillInBudgetCells(row, budgeted / 100, total)
                 })
             })
         }
         else {
             getSubcategoryBudget(selected_user, categories[i], (budgeted) => {
-                getTotalBySubcategory(start_time, end_time, selected_user, categories[i], (total)=>{
+                getTotalBySubcategory(first_of_month.getTime(), end_time, selected_user, categories[i], (total)=>{
                     fillInBudgetCells(row, budgeted / 100, total)
                 })
             })
