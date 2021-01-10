@@ -63,7 +63,15 @@ function updateUsers()
             let del = row.insertCell(2) 
             del.innerHTML = "X"
             del.addEventListener('click', ()=>{
-                ipcRenderer.send('delete-user-requested', users[i])
+                getUserCount((count) =>{
+                    console.log(count)
+                    if (count > 1){
+                        ipcRenderer.send('delete-user-requested', users[i])
+                    } else {
+                        ipcRenderer.send('error-popup', 'Unable to delete user. You must have at least one user.')
+                    }
+
+                })
             })
         }
     })
