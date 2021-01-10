@@ -61,7 +61,7 @@ function createMainWindow(){
        } 
     ]))
 
-    main_win.webContents.openDevTools()
+    //main_win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {
@@ -146,7 +146,7 @@ function createEditUserWindow()
     user_win.once('ready-to-show', () =>{
         user_win.show()
     })
-    user_win.webContents.openDevTools()
+    //user_win.webContents.openDevTools()
 }
 
 function createBudgetWindow()
@@ -159,7 +159,7 @@ function createBudgetWindow()
     budget_win.once('ready-to-show', () =>{
         budget_win.show()
     })
-    budget_win.webContents.openDevTools()
+    //budget_win.webContents.openDevTools()
 }
 
 ipcMain.on('add-entry-clicked', (event, is_expense) => {

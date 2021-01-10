@@ -93,7 +93,7 @@ function isValidInput()
     if (isNaN(amount) || amount === 0) error_msg = "'Amount' is not a valid number" 
 
     let note = document.getElementById('note-input').value
-    let regex =/^[a-zA-Z0-9_]*$/
+    let regex =/^[a-zA-Z0-9_\s]*$/
     if (!regex.test(note)) error_msg = "Notes can not have special characters."
 
     if (error_msg.length !== 0){
