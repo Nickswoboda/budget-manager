@@ -120,7 +120,7 @@ function createEntryWindow(is_expense, entry)
         entry_win.webContents.send('initialize-popup', is_expense, entry)
     })
 
-    //entry_win.webContents.openDevTools()
+    entry_win.webContents.openDevTools()
 }
 
 function createSettingsWindow()

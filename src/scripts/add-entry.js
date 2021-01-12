@@ -9,7 +9,9 @@ expense_categories = {}
 initDB()
 
 //set date as todays date by default
-document.getElementById('date-input').valueAsDate = new Date()
+//need to use tolocale string otherwise date will sometimes be 1 day forward or behind depending on time zone
+let today = new Date(new Date().toLocaleString())
+document.getElementById('date-input').valueAsDate = today 
 document.getElementById('category-input').addEventListener('change', () =>{
     if (!expense) return;
     
