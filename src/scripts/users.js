@@ -1,51 +1,33 @@
 const {ipcRenderer, remote} = require('electron')
+const prompt = require('electron-prompt')
 
-initDB()
+initDB(updateUsers)
+
 document.getElementById('close-btn').addEventListener('click', () => {
     remote.getCurrentWindow().close()
 })
 
-let add_btn = document.getElementById('add-btn')
-let add_user_div = document.getElementById('add-user-div')
-let user_input = document.getElementById('user-name-input')
-
-add_btn.addEventListener('click', () => {
-    showUserNameInput(true)
+document.getElementById('add-btn').addEventListener('click', () => {
+    prompt({
+        title: 'Add User',
+        label: 'Enter a user name: <br><font size="-2">(Alphabetical letters only)</font>',
+        inputAttrs : {
+            type: 'text',
+            required: true,
+            pattern: '[a-zA-Z]{1,}',
+        },
+        buttonLabels: { ok: 'Submit'},
+        type: 'input',
+        height: 200,
+        width: 400,
+        useHtmlLabel: true
+    }).then((result)=>{
+        if (result){
+            insertUser(result)
+            updateUsers()
+        }
+    })
 })
-
-document.getElementById('submit-btn').addEventListener('click', () => {
-    if (isValidUserName()){
-        insertUser(user_input.value)
-        showUserNameInput(false)
-        updateUsers()
-    } else {
-        ipcRenderer.send('error-popup', 'User names may only have alphabet characters.')
-    }
-})
-
-document.getElementById('cancel-btn').addEventListener('click', () => {
-    showUserNameInput(false)
-})
-
-function isValidUserName()
-{
-    let name = user_input.value
-    let regex =/^([a-zA-Z]{1,})$/
-
-    return regex.test(name)
-}
-function showUserNameInput(show)
-{
-    if (show){
-        add_user_div.style.display = 'inline'
-        add_btn.style.display = 'none'
-    } else {
-        add_user_div.style.display = 'none'
-        add_btn.style.display = 'inline'
-    }
-    user_input.value = ''
-}
-
 
 function updateUsers()
 {
@@ -78,7 +60,6 @@ function updateUsers()
     ipcRenderer.send('users-updated')
 }
 
-updateUsers()
 ipcRenderer.on('delete-user', (event, user_id) =>{
     deleteUser(user_id)
     updateUsers()
