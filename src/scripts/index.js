@@ -1,4 +1,5 @@
-const { ipcRenderer} = require('electron')
+const { ipcRenderer, remote} = require('electron')
+const prompt = require('electron-prompt')
 
 let start_time = 0
 let end_time = Number.MAX_SAFE_INTEGER
@@ -10,9 +11,46 @@ let net_income_chart = initLineChart()
 
 let expense_categories = getExpenseCategories()
 
-initDB()
+initDB(() => {getUserCount((count) => {
+    if (!count || count < 1){
+        prompt({
+            title: 'No users found',
+            label: 'Enter a user name: <br><font size="-2">(Alphabetical letters only)</font>',
+            inputAttrs : {
+                type: 'text',
+                required: true,
+                pattern: '[a-zA-Z]{1,}',
+            },
+            buttonLabels: { ok: 'Submit', cancel: 'Close Application' },
+            type: 'input',
+            height: 200,
+            width: 400,
+            useHtmlLabel: true
+        }).then((result)=>{
+            if (result){
+                insertUser(result)
+                updateUserSelection()
+            } else {
+                remote.getCurrentWindow().close()
+            }
+        })
+    }
+})})
+
 updateUserSelection()
 initCategoryBudgetSelect()
+
+document.getElementById('start-date').valueAsDate = new Date()
+document.getElementById('end-date').valueAsDate = new Date()
+
+document.getElementById("user-select").addEventListener('change', (event) =>{
+    selected_user = event.target.value
+    updateTables()
+})
+
+document.getElementById("view-select").addEventListener('change', (event) =>{
+    changeView(event.target.value)
+})
 
 function initCategoryBudgetSelect()
 {
@@ -33,18 +71,6 @@ function initCategoryBudgetSelect()
 
     updateTables()
 }
-
-document.getElementById('start-date').valueAsDate = new Date()
-document.getElementById('end-date').valueAsDate = new Date()
-
-document.getElementById("user-select").addEventListener('change', (event) =>{
-    selected_user = event.target.value
-    updateTables()
-})
-
-document.getElementById("view-select").addEventListener('change', (event) =>{
-    changeView(event.target.value)
-})
 
 function changeView(value)
 {
@@ -241,7 +267,7 @@ function updateTables()
     updateBudgetTable()
 }
 
-function updateUserSelection(users)
+function updateUserSelection()
 {
     let user_select = document.getElementById('user-select')
     while (user_select.length > 1){
@@ -294,5 +320,5 @@ ipcRenderer.on('deleteEntry', (event, id) => {
 
 ipcRenderer.on('users-updated', (event) => {
     updateTables()
-    getAllUsers(updateUserSelection)
+    updateUserSelection()
 })

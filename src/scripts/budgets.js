@@ -111,5 +111,3 @@ document.getElementById('subcat-div').addEventListener('click', (event) => {
         })
     }
 })
-
-
