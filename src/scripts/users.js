@@ -23,8 +23,14 @@ document.getElementById('add-btn').addEventListener('click', () => {
         useHtmlLabel: true
     }).then((result)=>{
         if (result){
-            insertUser(result)
-            updateUsers()
+            checkIfUserExists(result, (exists) => {
+                if (exists){
+                    ipcRenderer.send('error-popup', `User '${result}' already exists.`)
+                } else {
+                    insertUser(result)
+                    updateUsers()
+                }
+            })
         }
     })
 })

@@ -146,7 +146,7 @@ function createEditUserWindow()
     user_win.once('ready-to-show', () =>{
         user_win.show()
     })
-    //user_win.webContents.openDevTools()
+    user_win.webContents.openDevTools()
 }
 
 function createBudgetWindow()

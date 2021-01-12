@@ -112,6 +112,13 @@ function insertUser(name)
 {
     DBRun(`INSERT INTO users (name) VALUES('${name}')`, initUserBudgets.bind(null, name))
 }
+
+function checkIfUserExists(name, callback)
+{
+    DBGet(`SELECT id FROM users WHERE name = '${name}'`, (row) =>{
+        callback(row) 
+    })
+}
 function initUserBudgets(name)
 {
     DBGet(`SELECT id FROM users WHERE name = '${name}'`, (row) =>{
