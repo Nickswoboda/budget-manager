@@ -112,7 +112,7 @@ function updateBudgetTable(category = null)
     let date = new Date()
     let first_of_month = new Date(date.getFullYear(), date.getMonth(), 1)
     //used for timezone difference between table dates
-    first_of_month.setHours(-8)
+    first_of_month.setMinutes(first_of_month.getMinutes() + first_of_month.getTimezoneOffset())
 
     for (let i = 0; i < categories.length; ++i){
         let row = table.insertRow(i+1)
