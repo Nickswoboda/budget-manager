@@ -10,8 +10,9 @@ initDB()
 
 //set date as todays date by default
 //need to use tolocale string otherwise date will sometimes be 1 day forward or behind depending on time zone
-let today = new Date(new Date().toLocaleString())
-document.getElementById('date-input').valueAsDate = today 
+let today = new Date()
+today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
+document.getElementById('date-input').valueAsDate = today
 document.getElementById('category-input').addEventListener('change', () =>{
     if (!expense) return;
     
