@@ -59,6 +59,17 @@ function DBAll(query, callback)
     })
 }
 
+function getUTCDateTime(date)
+{
+    let datetime = date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+
+    if (Number.isNaN(datetime)){
+        return Number.MAX_SAFE_INTEGER
+    } else {
+        return datetime
+    }
+}
+
 function createTables(callback)
 {
     DBRun(`CREATE TABLE IF NOT EXISTS entries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, date TEXT, datetime INTEGER,
@@ -85,6 +96,12 @@ function getAllEntries(start = 0, end = Number.MAX_SAFE_INTEGER, user_id = -1, c
             ON users.id = entries.user_id
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND datetime >= ${start} AND datetime <= ${end} 
             ORDER BY datetime DESC`, callback)
+}
+function getEarliestEntryDate(callback)
+{
+    DBGet(`SELECT MIN(datetime) as date from entries`, (row) => {
+        callback(row.date)
+    })
 }
 
 function updateEntry(id, user_id, date, amount, category, subcategory, note)
@@ -171,7 +188,7 @@ function updateSubcategoryBudget(user_id, subcategory, value)
 
 function updateUser(id, name)
 {
-    DBRun(`UPDATE users SET name=${name}`)
+    DBRun(`UPDATE users SET name=${name} WHERE id=${id}`)
 }
 
 function deleteUser(id)
@@ -191,6 +208,8 @@ function getUserCount(callback)
 
 function getTotalByCategory(start = 0, end = Number.MAX_SAFE_INTEGER, user_id=-1, category, callback)
 {
+    start = getUTCDateTime(new Date(start)) 
+    end = getUTCDateTime(new Date(end)) 
     DBGet(`SELECT SUM(amount) as total FROM entries
             WHERE (${user_id} < 0 OR user_id = ${user_id}) AND category='${category}' AND entries.amount < 0 
                 AND entries.datetime >= ${start} AND datetime <= ${end}`, (row) => {

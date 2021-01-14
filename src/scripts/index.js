@@ -9,8 +9,6 @@ let expense_chart = initPieChart(true)
 let income_chart = initPieChart(false)
 let net_income_chart = initLineChart() 
 
-let expense_categories = getExpenseCategories()
-
 initDB(() => {getUserCount((count) => {
     if (!count || count < 1){
         prompt({
@@ -38,7 +36,7 @@ initDB(() => {getUserCount((count) => {
 })})
 
 updateUserSelection()
-initCategoryBudgetSelect()
+updateTables()
 
 document.getElementById('start-date').valueAsDate = new Date()
 document.getElementById('end-date').valueAsDate = new Date()
@@ -51,26 +49,6 @@ document.getElementById("user-select").addEventListener('change', (event) =>{
 document.getElementById("view-select").addEventListener('change', (event) =>{
     changeView(event.target.value)
 })
-
-function initCategoryBudgetSelect()
-{
-    let select = document.getElementById("cat-budget-select")
-
-    while (select.options.length > 1){
-        select.remove(0)
-    }
-
-    let category_names = Object.keys(expense_categories)
-    for (let i = 0; i < category_names.length; ++i){
-        select.options[i+1] = new Option(category_names[i], category_names[i])
-    }
-
-    select.addEventListener('change', (event) =>{
-        updateBudgetTable(event.target.value)
-    })
-
-    updateTables()
-}
 
 function changeView(value)
 {
@@ -86,67 +64,6 @@ function changeView(value)
             charts[i].style.display = "inline"
         }
     }
-}
-
-function getExpenseCategories()
-{
-    if (!fs.existsSync("assets/categories.json")){
-        console.log("Unable to load categories.json");
-    }
-
-    let data = fs.readFileSync("assets/categories.json")
-    return JSON.parse(data).expense
-}
-
-function updateBudgetTable(category = null)
-{
-    resetHTMLTable('budget-table')
-    let table = document.getElementById('budget-table')
-
-    if (!category){
-        category = table.dataset.category
-    }
-    let categories = category === "All" ? Object.keys(expense_categories) : expense_categories[category]
-    table.dataset.category = category
-
-    let date = new Date()
-    let first_of_month = new Date(date.getFullYear(), date.getMonth(), 1)
-    //used for timezone difference between table dates
-    first_of_month.setMinutes(first_of_month.getMinutes() - first_of_month.getTimezoneOffset())
-
-    for (let i = 0; i < categories.length; ++i){
-        let row = table.insertRow(i+1)
-
-        addCellToRow(row, 0, categories[i])
-        addCellToRow(row, 1, "")
-        addCellToRow(row, 2, "")
-        addCellToRow(row, 3, "")
-
-        if (category === "All"){
-            getTotalCategoryBudget(selected_user, categories[i], (budgeted) => {
-                getTotalByCategory(first_of_month.getTime(), end_time, selected_user, categories[i], (total)=>{
-                    fillInBudgetCells(row, budgeted / 100, total)
-                })
-            })
-        }
-        else {
-            getSubcategoryBudget(selected_user, categories[i], (budgeted) => {
-                getTotalBySubcategory(first_of_month.getTime(), end_time, selected_user, categories[i], (total)=>{
-                    fillInBudgetCells(row, budgeted / 100, total)
-                })
-            })
-        }
-    }
-}
-
-function fillInBudgetCells(row, budgeted, total)
-{
-    row.cells[1].innerHTML = budgeted.toFixed(2)
-    row.cells[2].innerHTML = total.toFixed(2)
-
-    let diff = budgeted + total
-    row.cells[3].innerHTML = diff.toFixed(2) 
-    row.cells[3].style.color = diff > 0 ? "green" : diff < 0 ? "red" : "black"; 
 }
 
 let custom_date_div = document.getElementById("custom-date-search");
@@ -264,7 +181,6 @@ function updateTables()
     updateCategoryTotals(true)
     updateCategoryTotals(false)
     updateNetIncome()
-    updateBudgetTable()
 }
 
 function updateUserSelection()
@@ -294,11 +210,13 @@ document.getElementById("income-btn").addEventListener('click', () =>{
 ipcRenderer.on('addEntry', (event, data) => {
     insertEntry(data.user_id, data.date, data.amount, data.category, data.subcategory, data.note) 
     updateTables()
+    updateBudgetMonthSelect()
 })
 
 ipcRenderer.on('update-entries', (event, data) => {
     updateEntry(data.id, data.user_id, data.date, data.amount, data.category, data.subcategory, data.note) 
     updateTables()
+    updateBudgetMonthSelect()
 })
 
 ipcRenderer.on('deleteEntry', (event, id) => {

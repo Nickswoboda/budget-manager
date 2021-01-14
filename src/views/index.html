@@ -51,11 +51,13 @@
         <option value="charts">Charts</option>
     </select><br><br>
     <div id="budget-table-div">
-        <label for="cat-budget">By Category: </label>
+        <h1>Budget</h1>
+        <label for="budget-month">Month:</label>
+        <select id="budget-month-select"></select>
+        <label for="cat-budget">Category: </label>
         <select id="cat-budget-select">
             <option value="All">All</option>
         </select>
-        <h1>Budget</h1>
         <table id="budget-table" data-category="All">
             <thead>
                 <tr>
@@ -82,5 +84,6 @@
     <script src="../scripts/database.js"></script>
     <script src="../scripts/charts.js"></script>
     <script src="../scripts/index.js"></script>
+    <script src="../scripts/budget-table.js"></script>
 </body>
 </html>
