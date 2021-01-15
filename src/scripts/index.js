@@ -53,27 +53,15 @@ document.getElementById("view-select").addEventListener('change', (event) =>{
 function changeView(value)
 {
     let charts = document.getElementsByClassName('chart-div')
-    if (value === "budget"){
-        document.getElementById('budget-table-div').style.display = "inline"
-        for (let i = 0; i < charts.length; ++i){
-            charts[i].style.display = "none"
-        }
-    } else {
-        document.getElementById('budget-table-div').style.display = "none"
-        for (let i = 0; i < charts.length; ++i){
-            charts[i].style.display = "inline"
-        }
+
+    document.getElementById('budget-table-div').style.display = (value === "budget") ? "inline" : "none"
+    for (let i = 0; i < charts.length; ++i){
+        charts[i].style.display = (value === "budget") ? "none" : "inline"
     }
 }
 
-let custom_date_div = document.getElementById("custom-date-search");
 document.getElementById("date-search-select").addEventListener('change', (event) =>{
-    if (event.target.value === "custom"){
-        custom_date_div.style.visibility = "visible";
-    }
-    else{
-        custom_date_div.style.visibility = "hidden";
-
+    if (event.target.value !== "custom"){
         let today = new Date()
         today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
         today.setHours(0,0,0,0)
@@ -90,6 +78,8 @@ document.getElementById("date-search-select").addEventListener('change', (event)
 
         updateTables(start_time, end_time, selected_user)
     }
+
+    document.getElementById("custom-date-search").style.visibility = (event.target.value === "custom") ? "visible" : "hidden"
 })
 
 document.getElementById("submit-btn").addEventListener('click', () =>{

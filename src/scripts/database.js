@@ -62,12 +62,7 @@ function DBAll(query, callback)
 function getUTCDateTime(date)
 {
     let datetime = date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
-
-    if (Number.isNaN(datetime)){
-        return Number.MAX_SAFE_INTEGER
-    } else {
-        return datetime
-    }
+    return (Number.isNaN(datetime)) ? Number.MAX_SAFE_INTEGER : datetime
 }
 
 function createTables(callback)

@@ -52,7 +52,6 @@ function updateUsers()
             del.innerHTML = "X"
             del.addEventListener('click', ()=>{
                 getUserCount((count) =>{
-                    console.log(count)
                     if (count > 1){
                         ipcRenderer.send('delete-user-requested', users[i])
                     } else {
