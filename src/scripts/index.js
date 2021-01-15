@@ -75,14 +75,19 @@ document.getElementById("date-search-select").addEventListener('change', (event)
         custom_date_div.style.visibility = "hidden";
 
         let today = new Date()
+        today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
+        today.setHours(0,0,0,0)
         end_time = today.getTime()
 
         switch(event.target.value){
             case "all-time": start_time = 0; break;
-            case "past-year": start_time = today.setFullYear(today.getFullYear() - 1); break;
-            case "past-month": start_time = today.setMonth(today.getMonth() - 1); break;
-            case "past-week": start_time = today.setDate(today.getDate() - 7); break;
+            case "last-7-days": start_time = today.getTime() - (7 * 24 * 60 * 60 * 1000); break;
+            case "last-30-days": start_time = today.getTime() - (30 * 24 * 60 * 60 * 1000); break;
+            case "last-90-days": start_time = today.getTime() - (90 * 24 * 60 * 60 * 1000); break;
+            case "last-180-days": start_time = today.getTime() - (180 * 24 * 60 * 60 * 1000); break;
+            case "last-365-days": start_time = today.getTime() - (365 * 24 * 60 * 60 * 1000); break;
         }
+
         updateTables(start_time, end_time, selected_user)
     }
 })
