@@ -7,82 +7,83 @@
     <link rel="stylesheet" href="../styles/index.css">
 </head>
 <body>
-    <button id="expense-btn">Add Expense</button>
-    <button id="income-btn">Add Income</button><br><br><br>
-    <div>
+    <div id="history-table-div">
+        <button id="expense-btn">Add Expense</button>
+        <button id="income-btn">Add Income</button><br>
+        <h1>History</h1>
         <label for="user-select">User: </label>
         <select id="user-select">
             <option value=-1>All</option>
         </select>
-    </div>
-    <div>
-        <label for="date-search">Date Range: </label>
-        <select id="date-search-select">
-            <option value="all-time">All Time</option>
-            <option value="last-7-days">Last 7 Days</option>
-            <option value="last-30-days">Last 30 Days</option>
-            <option value="last-90-days">Last 90 Days</option>
-            <option value="last-180-days">Last 180 Days</option>
-            <option value="last-365-days">Last 365 Days</option>
-            <option value="custom">Custom</option>
-        </select><br>
-        <div id="custom-date-search" style="visibility: hidden;">
-            <input type="date" id="start-date">
-            <input type="date" id="end-date">
-            <button id="submit-btn">Submit</button>
+        <div>
+            <label for="date-search">Date Range: </label>
+            <select id="date-search-select">
+                <option value="all-time">All Time</option>
+                <option value="last-7-days">Last 7 Days</option>
+                <option value="last-30-days">Last 30 Days</option>
+                <option value="last-90-days">Last 90 Days</option>
+                <option value="last-180-days">Last 180 Days</option>
+                <option value="last-365-days">Last 365 Days</option>
+                <option value="custom">Custom</option>
+            </select><br>
+            <div id="custom-date-search" style="visibility: hidden;">
+                <input type="date" id="start-date">
+                <input type="date" id="end-date">
+                <button id="submit-btn">Submit</button>
+            </div>
+        </div>
+        <div>
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>Edit</th>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Category</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
-    <div>
-        <h1>History</h1>
-        <table id="history-table">
-            <thead>
-                <tr>
-                    <th>Edit</th>
-                    <th>User</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Category</th>
-                    <th>Note</th>
-                </tr>
-            </thead>
-        </table>
+    <div id="data-view-div">
+        <label for="view">View: </label>
+        <select id="view-select">
+            <option value="budget">Budget</option>
+            <option value="charts">Charts</option>
+        </select><br><br>
+        <div id="budget-table-div">
+            <h1>Budget</h1>
+            <label for="budget-month">Month:</label>
+            <select id="budget-month-select"></select>
+            <label for="cat-budget">Category: </label>
+            <select id="cat-budget-select">
+                <option value="All">All</option>
+            </select>
+            <table id="budget-table" data-category="All">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Budgeted</th>
+                        <th>Spent</th>
+                        <th>Left</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="chart-div" style="display: none;">
+            <canvas id="expense-canvas"></canvas>
+        </div>
+        <div class="chart-div" style="display: none;">
+            <canvas id="income-canvas"></canvas>
+        </div>
+        <div id="line-chart-div" class="chart-div" style="display: none;">
+            <canvas id="net-income-canvas"></canvas>
+        </div>
+            <h1>Net Income:</h1>
+            <h2 id="net-income"></h2>
     </div>
-    <label for="view">View: </label>
-    <select id="view-select">
-        <option value="budget">Budget</option>
-        <option value="charts">Charts</option>
-    </select><br><br>
-    <div id="budget-table-div">
-        <h1>Budget</h1>
-        <label for="budget-month">Month:</label>
-        <select id="budget-month-select"></select>
-        <label for="cat-budget">Category: </label>
-        <select id="cat-budget-select">
-            <option value="All">All</option>
-        </select>
-        <table id="budget-table" data-category="All">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Budgeted</th>
-                    <th>Spent</th>
-                    <th>Left</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-    <div class="chart-div" style="display: none;">
-        <canvas id="expense-canvas"></canvas>
-    </div>
-    <div class="chart-div" style="display: none;">
-        <canvas id="income-canvas"></canvas>
-    </div>
-    <div class="chart-div" style="display: none;">
-        <canvas id="net-income-canvas"></canvas>
-    </div>
-    <br>
-    <h1>Net Income:</h1>
-    <h2 id="net-income"></h2>
     <script src="../scripts/database.js"></script>
     <script src="../scripts/charts.js"></script>
     <script src="../scripts/index.js"></script>

@@ -1,11 +1,28 @@
 table{
     background-color: aliceblue;
     width: 200px;
-    margin: 1em;
-
 }
-.chart-div{
+#history-table-div{
+    width: 30vw;
+    height: 99vh;
     float: left;
-    width: 600px;
-    height: 600px;
+    text-align: center;
+}
+#data-view-div{
+    width: 60vw;
+    height: 100vh;
+    float:left;
+    margin: 1em;
+    text-align: center;
+}
+
+.chart-div{
+    position: relative;
+    width: 50%;
+    float: left;
+}
+
+#line-chart-div{
+    position: relative;
+    width: 100%;
 }

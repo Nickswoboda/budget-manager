@@ -41,6 +41,8 @@ updateTables()
 document.getElementById('start-date').valueAsDate = new Date()
 document.getElementById('end-date').valueAsDate = new Date()
 
+
+
 document.getElementById("user-select").addEventListener('change', (event) =>{
     selected_user = event.target.value
     updateTables()
@@ -52,11 +54,10 @@ document.getElementById("view-select").addEventListener('change', (event) =>{
 
 function changeView(value)
 {
-    let charts = document.getElementsByClassName('chart-div')
-
-    document.getElementById('budget-table-div').style.display = (value === "budget") ? "inline" : "none"
+    let charts = document.getElementsByClassName("chart-div")
+    document.getElementById('budget-table-div').style.display = (value === "budget") ? "block" : "none"
     for (let i = 0; i < charts.length; ++i){
-        charts[i].style.display = (value === "budget") ? "none" : "inline"
+        charts[i].style.display = (value === "budget") ? "none" : "block"
     }
 }
 

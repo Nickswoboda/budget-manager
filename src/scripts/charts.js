@@ -35,6 +35,7 @@ function initPieChart(is_expense)
             },
             legend: {
                 position: is_expense ? 'left' : 'right',
+                align: 'start',
                 onClick: (event) => {
                     event.stopPropagation()
                 }
