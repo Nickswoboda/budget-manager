@@ -117,7 +117,8 @@ app.on('activate', () => {
 
 function createEntryWindow(is_expense, entry)
 {
-    entry_win = createBrowser('Entry', 300, 500, false, true)
+    entry_win = createBrowser('Entry', 300, 300, true)
+    entry_win.removeMenu()
     entry_win.on('close', () => {
         entry_win = null
     })
@@ -127,7 +128,7 @@ function createEntryWindow(is_expense, entry)
         entry_win.webContents.send('initialize-popup', is_expense, entry)
     })
 
-    entry_win.webContents.openDevTools()
+    //entry_win.webContents.openDevTools()
 }
 
 function createSettingsWindow()
