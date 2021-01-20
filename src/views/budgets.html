@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <style>
+            .select-label{
+                font-weight: bold;
+            }
+            #subcat-div{
+                height: 60vh;
+            }
+        </style>
+    </head>
     <body>
         <br>
-        <label for="user">User: </label>
+        <label class="select-label" for="user">User: </label>
         <select id="user-select"></select><br><br>
         
-        <label for="category">Category: </label>
-        <select id="category-select"></select>
+        <label class="select-label" for="category">Category: </label>
+        <select id="category-select"></select><br><br><br>
 
-        <h2>Budgets</h2>
         <div id="subcat-div"></div>
 
-        <button id="apply-btn">Apply</button><br><br>
+        <button id="apply-btn">Apply</button>
         <button id="close-btn">Close</button>
     </body>
     <script src="../scripts/database.js"></script> 

@@ -25,6 +25,7 @@ function createBrowser(title, width, height, is_modal)
         minimizable: !is_modal,
         maximizable: !is_modal,
         fullscreenable: !is_modal,
+        resizable: !is_modal
     })
 }
 
@@ -42,11 +43,6 @@ function createMainWindow(){
            label: "File",
            submenu: [
                {
-                   label: 'Settings', click() {
-                       createSettingsWindow()
-                   }
-               },
-               {
                    label: 'Edit Users', click() {
                         createEditUserWindow()
                    }
@@ -56,6 +52,13 @@ function createMainWindow(){
                        createBudgetWindow()
                    }
                },
+               {type: 'separator'},
+               {
+                   label: 'Settings', click() {
+                       createSettingsWindow()
+                   }
+               },
+               {type: 'separator'},
                {
                    label: 'Quit', click(){
                        app.quit()
@@ -158,6 +161,7 @@ function createEditUserWindow()
 function createBudgetWindow()
 {
     budget_win = createBrowser('Budgets', 300, 500, true)
+    budget_win.removeMenu()
     budget_win.on('close', () => {
         budget_win = null
     })
