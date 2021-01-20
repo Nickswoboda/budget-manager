@@ -80,7 +80,7 @@ document.getElementById("date-search-select").addEventListener('change', (event)
         updateTables(start_time, end_time, selected_user)
     }
 
-    document.getElementById("custom-date-search").style.visibility = (event.target.value === "custom") ? "visible" : "hidden"
+    document.getElementById("custom-date-search").style.display = (event.target.value === "custom") ? "block" : "none"
 })
 
 document.getElementById("submit-btn").addEventListener('click', () =>{

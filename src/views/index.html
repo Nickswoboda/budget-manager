@@ -9,13 +9,12 @@
 <body>
     <div id="history-table-div">
         <button id="expense-btn">Add Expense</button>
-        <button id="income-btn">Add Income</button><br>
+        <button id="income-btn">Add Income</button><br><br>
         <h1>History</h1>
         <label for="user-select">User: </label>
         <select id="user-select">
             <option value=-1>All</option>
         </select>
-        <div>
             <label for="date-search">Date Range: </label>
             <select id="date-search-select">
                 <option value="all-time">All Time</option>
@@ -25,13 +24,12 @@
                 <option value="last-180-days">Last 180 Days</option>
                 <option value="last-365-days">Last 365 Days</option>
                 <option value="custom">Custom</option>
-            </select><br>
-            <div id="custom-date-search" style="visibility: hidden;">
+            </select>
+            <div id="custom-date-search" style="display: none;">
                 <input type="date" id="start-date">
                 <input type="date" id="end-date">
                 <button id="submit-btn">Submit</button>
-            </div>
-        </div>
+            </div><br><br>
         <div>
             <table id="history-table">
                 <thead>
@@ -60,7 +58,7 @@
             <label for="cat-budget">Category: </label>
             <select id="cat-budget-select">
                 <option value="All">All</option>
-            </select>
+            </select><br><br>
             <table id="budget-table" data-category="All">
                 <thead>
                     <tr>

@@ -1,18 +1,20 @@
 table{
     background-color: aliceblue;
-    width: 200px;
+    width: 100%;
 }
 #history-table-div{
+    padding-top: 10vh;
     width: 30vw;
-    height: 99vh;
+    height: 89vh;
     float: left;
     text-align: center;
+    margin-left: 1em;
 }
 #data-view-div{
+    padding-top: 10vh;
     width: 60vw;
-    height: 100vh;
-    float:left;
-    margin: 1em;
+    height: 89vh;
+    float:right;
     text-align: center;
 }
 
@@ -25,4 +27,5 @@ table{
 #line-chart-div{
     position: relative;
     width: 100%;
+    height: 35%;
 }

@@ -113,6 +113,7 @@ function initLineChart()
             }]
         },
         options: {
+            maintainAspectRatio: false,
             responsive: true,
             title: {
                 text: 'Net Income',
