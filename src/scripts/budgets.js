@@ -57,11 +57,26 @@ function updateSubcategories(category)
     let subcategories = categories[category]
     let user_id = document.getElementById('user-select').value
 
+    if (subcategories.length === 0){
+        getSubcategoryBudget(user_id, category, (value) => {
+            let subcat_label = document.createElement('label')
+            subcat_label.id = category + '-label'
+            subcat_label.innerHTML = category + ": $" + parseFloat(value/100).toFixed(2)
+
+            let edit_btn = document.createElement('button')
+            edit_btn.dataset.category = category 
+            edit_btn.innerHTML = "Change"
+
+            subcat_div.appendChild(subcat_label)
+            subcat_div.appendChild(edit_btn)
+            subcat_div.innerHTML += '<br><br>'
+        })
+    }
     for (let i = 0; i < subcategories.length; ++i){
         getSubcategoryBudget(user_id, subcategories[i], (value) => {
             let subcat_label = document.createElement('label')
             subcat_label.id = subcategories[i] + '-label'
-            subcat_label.innerHTML = subcategories[i] + ": $" + parseFloat(value).toFixed(2)
+            subcat_label.innerHTML = subcategories[i] + ": $" + parseFloat(value/100).toFixed(2)
 
             let edit_btn = document.createElement('button')
             edit_btn.dataset.category = subcategories[i]

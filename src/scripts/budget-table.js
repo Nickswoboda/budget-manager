@@ -62,6 +62,10 @@ function initCategoryBudgetSelect()
 
     let category_names = Object.keys(expense_categories)
     for (let i = 0; i < category_names.length; ++i){
+        //don't show category if it doesn't have any subcategories
+        if (expense_categories[category_names[i]].length === 0){
+            continue;
+        }
         select.options[i+1] = new Option(category_names[i], category_names[i])
     }
 
