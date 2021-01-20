@@ -110,7 +110,7 @@ function updateBudgetTable(category = null)
             })
         }
         else {
-            getSubcategoryBudget(last_of_month, categories[i], (budgeted) => {
+            getSubcategoryBudget(selected_user, categories[i], (budgeted) => {
                 getTotalBySubcategory(first_of_month.getTime(), last_of_month.getTime(), selected_user, categories[i], (total)=>{
                     fillInBudgetCells(row, budgeted / 100, total)
                 })
