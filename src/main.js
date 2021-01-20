@@ -9,13 +9,12 @@ let budget_win = null
 
 settings.init()
 
-function createBrowser(title, width, height, has_frame, is_modal)
+function createBrowser(title, width, height, is_modal)
 {
     return new BrowserWindow({
         title: title,
         width: width,
         height: height,
-        frame: has_frame,
         modal: is_modal,
         parent: is_modal ? main_win : null,
         webPreferences:{
@@ -31,7 +30,7 @@ function createBrowser(title, width, height, has_frame, is_modal)
 
 function createMainWindow(){
     
-    main_win = createBrowser('Budget Manager', 1600, 900, true, false)
+    main_win = createBrowser('Budget Manager', 1600, 900, false)
     main_win.loadFile('src/views/index.html')
     main_win.on('close', (event) => { 
         main_win = null
@@ -130,7 +129,7 @@ function createEntryWindow(is_expense, entry)
 
 function createSettingsWindow()
 {
-    settings_win = createBrowser('Settings', 220, 180, true, true)
+    settings_win = createBrowser('Settings', 220, 180, true)
     settings_win.removeMenu()
     settings_win.on('close', () => {
         settings_win = null
@@ -144,7 +143,8 @@ function createSettingsWindow()
 }
 function createEditUserWindow()
 {
-    user_win = createBrowser('Users', 300, 500, false, true)
+    user_win = createBrowser('Users', 300, 250, true)
+    user_win.removeMenu()
     user_win.on('close', () => {
         user_win = null
     })
@@ -152,12 +152,12 @@ function createEditUserWindow()
     user_win.once('ready-to-show', () =>{
         user_win.show()
     })
-    user_win.webContents.openDevTools()
+    //user_win.webContents.openDevTools()
 }
 
 function createBudgetWindow()
 {
-    budget_win = createBrowser('Budgets', 300, 500, false, true)
+    budget_win = createBrowser('Budgets', 300, 500, true)
     budget_win.on('close', () => {
         budget_win = null
     })

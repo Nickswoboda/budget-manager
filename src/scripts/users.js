@@ -47,9 +47,9 @@ function updateUsers()
             let row = user_table.insertRow(i)
 
             row.insertCell(0).innerHTML = users[i].name
-            row.insertCell(1).innerHTML = "      "
-            let del = row.insertCell(2) 
+            let del = row.insertCell(1) 
             del.innerHTML = "X"
+            del.style.color = "red"
             del.addEventListener('click', ()=>{
                 getUserCount((count) =>{
                     if (count > 1){
