@@ -147,7 +147,7 @@ function addEntriesToTable()
     getAllEntries(start_time, end_time, selected_user, (entries) => {
         for (let i = 0; i < entries.length; ++i){
             let row = table.insertRow(i+1)
-            row.style.backgroundColor = entries[i].amount < 0 ? "red" : "green"
+            row.style.backgroundColor = entries[i].amount < 0 ? "#f44336" : "#4CAF50"
 
             let edit = addCellToRow(row, 0, "Edit") 
             edit.addEventListener("click", () =>{

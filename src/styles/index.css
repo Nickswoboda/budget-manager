@@ -1,9 +1,10 @@
 table{
     background-color: aliceblue;
     width: 100%;
+    border-collapse: collapse;
 }
 th{
-    background-color: white;
+    background-color: rgb(172, 172, 172);
     position: sticky;
     top: 0px;
 }
@@ -14,7 +15,7 @@ th{
     background-color: aliceblue;
 }
 #history-div{
-    padding-top: 10vh;
+    padding-top: 12vh;
     width: 35vw;
     height: 89vh;
     float: left;
@@ -22,7 +23,7 @@ th{
     margin-left: 1em;
 }
 #data-view-div{
-    padding-top: 10vh;
+    padding-top: 12vh;
     width: 60vw;
     height: 89vh;
     float:right;
@@ -39,4 +40,24 @@ th{
     position: relative;
     width: 100%;
     height: 35%;
+}
+
+button{
+    border: none;
+    padding: 5px;
+    text-align: center;
+    color: white;
+}
+
+#income-btn{
+    background-color: #4CAF50;
+}
+#expense-btn{
+    background-color: #f44336;
+}
+
+select{
+    padding: 3px;
+    border: 1px solid #CCC;
+    background: #f2f2f2;
 }
