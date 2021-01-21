@@ -1,17 +1,35 @@
 table{
-    background-color: aliceblue;
     width: 100%;
-    border-collapse: collapse;
+    border-spacing: 0px 1px;
+    overflow: hidden;
+    table-layout: fixed;
 }
 th{
-    background-color: rgb(172, 172, 172);
+    background-color: rgb(225, 225, 225);
     position: sticky;
     top: 0px;
+}
+td{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#history-table > thead tr th:first-child,
+#history-table > tbody tr td:first-child {
+  width: 2em;
+  min-width: 2em;
+  max-width: 2em;
+  word-break: break-all;
+}
+
+tr:nth-child(odd){
+    background-color: rgb(246, 246, 246);
 }
 
 #history-table-div{
     height: 40%;
     overflow-y: scroll;
+    overflow-x: hidden;
     background-color: aliceblue;
 }
 #history-div{
