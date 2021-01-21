@@ -49,7 +49,7 @@ function updateUsers()
             row.insertCell(0).innerHTML = users[i].name
             let del = row.insertCell(1) 
             del.innerHTML = "X"
-            del.style.color = "red"
+            del.style.color = "#f44336"
             del.addEventListener('click', ()=>{
                 getUserCount((count) =>{
                     if (count > 1){

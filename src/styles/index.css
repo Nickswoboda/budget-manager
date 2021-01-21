@@ -30,7 +30,7 @@ tr:nth-child(odd){
     height: 40%;
     overflow-y: scroll;
     overflow-x: hidden;
-    background-color: aliceblue;
+    background-color: rgb(225, 225, 225);
 }
 #history-div{
     padding-top: 12vh;

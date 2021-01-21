@@ -81,7 +81,7 @@ function fillInBudgetCells(row, budgeted, total)
 
     let diff = budgeted + total
     row.cells[3].innerHTML = diff.toFixed(2) 
-    row.cells[3].style.color = diff > 0 ? "green" : diff < 0 ? "red" : "black"; 
+    row.cells[3].style.color = diff > 0 ? "#4CAF50" : diff < 0 ? "#f44336" : "black"; 
 }
 
 function updateBudgetTable(category = null)

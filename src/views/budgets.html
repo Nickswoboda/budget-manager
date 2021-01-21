@@ -1,28 +1,55 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <style>
-            .select-label{
-                font-weight: bold;
-            }
-            #subcat-div{
-                height: 60vh;
-            }
-        </style>
-    </head>
-    <body>
-        <br>
-        <label class="select-label" for="user">User: </label>
-        <select id="user-select"></select><br><br>
-        
-        <label class="select-label" for="category">Category: </label>
-        <select id="category-select"></select><br><br><br>
 
-        <div id="subcat-div"></div>
+<head>
+    <style>
+        .select-label {
+            font-weight: bold;
+        }
 
-        <button id="apply-btn">Apply</button>
-        <button id="close-btn">Close</button>
-    </body>
-    <script src="../scripts/database.js"></script> 
-    <script src="../scripts/budgets.js"></script> 
+        #subcat-div {
+            height: 60vh;
+        }
+
+        button {
+            border: none;
+            padding: 5px;
+            text-align: center;
+            color: white;
+            float: right ;
+            background-color: #4CAF50;
+            margin-left: 5px;
+        }
+
+        #apply-btn {
+            background-color: #3879D9;
+        }
+
+        #close-btn {
+            background-color: #DDD;
+        }
+        select {
+            padding: 3px;
+            border: 1px solid #CCC;
+            background: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <br>
+    <label class="select-label" for="user">User: </label>
+    <select id="user-select"></select><br><br>
+
+    <label class="select-label" for="category">Category: </label>
+    <select id="category-select"></select><br><br><br>
+
+    <div id="subcat-div"></div>
+
+    <button id="apply-btn">Apply</button>
+    <button id="close-btn">Close</button>
+</body>
+<script src="../scripts/database.js"></script>
+<script src="../scripts/budgets.js"></script>
+
 </html>

@@ -1,21 +1,53 @@
 <!DOCTYPE html>
 <html>
-    <body>
-        <label for="user">User:</label>
-        <select id="user-input"></select><br><br>
-        <label for="date">Date:</label>
-        <input type="date" id="date-input"><br><br>
-        <label for="amount">Amount:</label>
-        <input type="number" step="0.01" id="amount-input"><br><br>
-        <label for="category">Category:</label>
-        <select id="category-input"></select>
-        <select id="subcat-input"></select><br><br>
-        <label for="note">Note:</label>
-        <input type="text" maxlength="80" id="note-input"><br>
-        <button id="delete-btn">Delete</button><br><br>
-        <button id="submit-btn">Submit</button>
-        <button id="cancel-btn">Cancel</button>
-        <script src="../scripts/database.js"></script>
-        <script src="../scripts/add-entry.js"></script>
-    </body>
+
+<head>
+    <style>
+        button {
+            border: none;
+            padding: 5px;
+            text-align: center;
+            color: white;
+            float: right;
+            margin-left: 5px;
+        }
+
+        #submit-btn {
+            background-color: #3879D9;
+        }
+
+        #cancel-btn {
+            background-color: #DDD;
+        }
+
+        select {
+            padding: 3px;
+            border: 1px solid #CCC;
+            background: #f2f2f2;
+        }
+        input {
+            border: 1px solid #CCC;
+        }
+    </style>
+</head>
+
+<body>
+    <label for="user">User:</label>
+    <select id="user-input"></select><br><br>
+    <label for="date">Date:</label>
+    <input type="date" id="date-input"><br><br>
+    <label for="amount">Amount:</label>
+    <input type="number" step="0.01" id="amount-input"><br><br>
+    <label for="category">Category:</label>
+    <select id="category-input"></select>
+    <select id="subcat-input"></select><br><br>
+    <label for="note">Note:</label>
+    <input type="text" maxlength="80" id="note-input"><br>
+    <button id="delete-btn">Delete</button><br><br>
+    <button id="submit-btn">Submit</button>
+    <button id="cancel-btn">Cancel</button>
+    <script src="../scripts/database.js"></script>
+    <script src="../scripts/add-entry.js"></script>
+</body>
+
 </html>

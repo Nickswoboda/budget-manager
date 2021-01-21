@@ -113,7 +113,7 @@ function updateNetIncome()
 
         net_income = document.getElementById('net-income')
         net_income.innerHTML = sum.toFixed(2)
-        net_income.style.color = sum > 0 ? "green" : sum < 0 ? "red" : "black"; 
+        net_income.style.color = sum > 0 ? "#4CAF50" : sum < 0 ? "#f44336" : "black"; 
     })
 }
 function updateCategoryTotals(is_expense)
