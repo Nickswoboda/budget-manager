@@ -2,9 +2,20 @@ table{
     background-color: aliceblue;
     width: 100%;
 }
+th{
+    background-color: white;
+    position: sticky;
+    top: 0px;
+}
+
 #history-table-div{
+    height: 40%;
+    overflow-y: scroll;
+    background-color: aliceblue;
+}
+#history-div{
     padding-top: 10vh;
-    width: 30vw;
+    width: 35vw;
     height: 89vh;
     float: left;
     text-align: center;
