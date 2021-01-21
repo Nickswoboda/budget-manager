@@ -17,7 +17,7 @@ th{
 #history-div{
     padding-top: 12vh;
     width: 35vw;
-    height: 89vh;
+    height: 87vh;
     float: left;
     text-align: center;
     margin-left: 1em;
@@ -25,7 +25,7 @@ th{
 #data-view-div{
     padding-top: 12vh;
     width: 60vw;
-    height: 89vh;
+    height: 87vh;
     float:right;
     text-align: center;
 }
