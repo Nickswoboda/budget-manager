@@ -15,12 +15,6 @@ Budget Manager is an Electron based-app designed to help with budgeting and trac
 4. `npm run make`
 
 ## Dependencies
-- [Node.js](https://nodejs.org/en/)
-- [Electron](https://github.com/electron/electron)
-- [SQLite](https://www.sqlite.org/index.html)
-- [Chart.js](https://www.chartjs.org/)
-- [auto-launch](https://github.com/Teamwork/node-auto-launch)
-- [electron-prompt](https://github.com/p-sam/electron-prompt)
-- [electron-json-storage](https://github.com/electron-userland/electron-json-storage)
+[Node.js](https://nodejs.org/en/), [Electron](https://github.com/electron/electron), [SQLite](https://www.sqlite.org/index.html), [Chart.js](https://www.chartjs.org/), [auto-launch](https://github.com/Teamwork/node-auto-launch), [electron-prompt](https://github.com/p-sam/electron-prompt), and [electron-json-storage](https://github.com/electron-userland/electron-json-storage)
 
 
